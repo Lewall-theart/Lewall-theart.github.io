@@ -1,0 +1,22 @@
+{
+  "name": "0xblog",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^3.0.0",
+    "@astrojs/vue": "^4.0.0",
+    "astro": "^4.0.0",
+    "motion": "^10.18.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@unocss/astro": "^0.58.0",
+    "@unocss/reset": "^0.58.0",
+    "unocss": "^0.58.0"
+  }
+}

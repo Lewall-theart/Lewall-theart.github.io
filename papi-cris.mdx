@@ -1,0 +1,112 @@
+---
+title: "Papi Cris' Fortune"
+description: "RSA với số nguyên tố nhỏ ẩn trong câu chuyện gia đình. Trial division phá vỡ toàn bộ trong dưới một giây."
+date: 2024-03-01
+category: Crypto
+catColor: cyan
+difficulty: medium
+tags: [RSA, Small Prime, Trial Division]
+event: "CTF 2024"
+readTime: 8
+flag: "S3cr3t_to_p4pis_f0rtune"
+featured: true
+---
+
+Khi mở challenge, tôi thấy một cây gia phả dài — đầy những nhân vật kỳ lạ — và bên dưới là ba dòng số lạnh lùng.
+
+> "Trong CTF, câu chuyện không bao giờ chỉ là câu chuyện. Đó là mật mã dưới dạng văn xuôi."
+
+## 🧾 Initial Data
+
+Challenge cung cấp RSA parameters chuẩn:
+
+```text
+n = 6258845379969220213010003414339325069273755857...
+e = 0x10001
+c = 6231872210586447563307026724797410213049258686...
+```
+
+Mục tiêu: tìm `m = cᵈ mod n`. Và để làm vậy, cần factor `n = p × q`.
+
+## 🌳 Đọc cây gia phả
+
+Mỗi nhân vật ẩn một manh mối toán học.
+
+### 👩‍🔬 Prima Sofia — The First Real Hint
+
+> *"O papi Cris dizia que até 100000 era perto e que basta descobrir um que o outro é óbvio"*
+
+Khoảnh khắc đọc tới đây — tim đập nhanh hơn một chút. Đây là hint rõ nhất: **q < 100.000**.
+
+### 🎲 Primo Ricardo
+
+> *"Se pudesse escolher um número da sorte seria 777..."*
+
+**p ≈ 2^777**. Một số nguyên tố khổng lồ ~777 bit. Kết hợp với Sofia: `n = p × q` trong đó `q` cực nhỏ.
+
+### 🎮 Irmão Rafinha
+
+```text
+Fortnite_Pass = f1e2d3c4b5a69788796a5b4c3d2e1f0a9
+```
+
+32 ký tự hex — ghi chú lại, có thể dùng sau decrypt.
+
+### 👵 Avó Bastarda — Red Herring
+
+*"Roubou 2€ da carteira do papi Cris em 2009"*
+
+Con số `2` và `2009` trông như hint nhưng không dẫn đến đâu. **Bỏ qua.**
+
+## 🧠 Kế hoạch tấn công
+
+Từ hai manh mối cốt lõi:
+
+| Biến | Giá trị |
+|------|---------|
+| q | < 100.000 → trial division |
+| p | ≈ 2^777 → tính từ n/q |
+
+## 💻 Script giải
+
+**Bước 1 — Factor n:**
+
+```python
+from sympy import primerange
+
+n = 625884537996922021301000341433932506927375585765...
+e = 0x10001
+c = 623187221058644756330702672479741021304925868602...
+
+for q in primerange(2, 100_000):
+    if n % q == 0:
+        p = n // q
+        print(f"✓ Factor found: q = {q}")
+        print(f"  p = {p}")
+        break
+```
+
+**Bước 2 — Decrypt:**
+
+```python
+from Crypto.Util.number import inverse, long_to_bytes
+
+phi = (p - 1) * (q - 1)
+d   = inverse(e, phi)
+m   = pow(c, d, n)
+print(long_to_bytes(m))
+```
+
+## 🎉 Flag
+
+Khi terminal in ra plaintext — cảm giác đó không thể diễn tả.
+
+```
+S3cr3t_to_p4pis_f0rtune
+```
+
+## 📚 Lessons Learned
+
+- **Small prime factor** làm RSA sụp đổ hoàn toàn trong mili-giây
+- Luôn đọc kỹ narrative — CTF author nhúng hint vào mọi dòng chữ
+- Biết phân biệt red herring vs real hint là kỹ năng quan trọng không kém toán học
