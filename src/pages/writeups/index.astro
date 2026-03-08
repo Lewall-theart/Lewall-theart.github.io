@@ -1,0 +1,46 @@
+---
+// src/pages/writeups/index.astro
+import Base from '../../layouts/Base.astro'
+import { getCollection } from 'astro:content'
+import WriteupFilter from '../../components/WriteupFilter.vue'
+
+const writeups = await getCollection('writeups', ({ data }) => !data.draft)
+const sorted = writeups.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+
+// Serialize for Vue
+const items = sorted.map(w => ({
+  slug:        w.slug,
+  title:       w.data.title,
+  description: w.data.description,
+  category:    w.data.category,
+  catColor:    w.data.catColor,
+  difficulty:  w.data.difficulty,
+  tags:        w.data.tags,
+  date:        w.data.date.toISOString(),
+  event:       w.data.event,
+  readTime:    w.data.readTime,
+}))
+---
+
+<Base title="Writeups">
+  <div class="pt-28 pb-20">
+    <div class="container">
+
+      <!-- Header -->
+      <header class="border-b border-border pb-14 mb-14">
+        <div class="font-mono text-[10px] tracking-[3px] uppercase text-mute mb-4">// all writeups</div>
+        <h1 class="font-display font-800 tracking-[-3px] text-bright mb-4"
+            style="font-size: clamp(40px, 7vw, 72px)">
+          Writeups
+        </h1>
+        <p class="text-sm text-dim max-w-[480px] leading-relaxed">
+          Tất cả các bài giải — từ easy warmup đến insane challenge không có hint.
+        </p>
+      </header>
+
+      <!-- Vue interactive filter + grid -->
+      <WriteupFilter client:load items={items} />
+
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,120 @@
+---
+// src/pages/about.astro
+import Base from '../layouts/Base.astro'
+import SkillBars from '../components/SkillBars.vue'
+---
+
+<Base title="About">
+  <div class="pt-28 pb-20">
+    <div class="container">
+
+      <!-- Hero -->
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-20 items-center border-b border-border pb-20 mb-20">
+        <div>
+          <div class="font-mono text-[10px] tracking-[3px] uppercase text-mute mb-5">// who am i</div>
+          <h1 class="font-display font-800 text-bright mb-2 tracking-[-3px]"
+              style="font-size: clamp(48px, 8vw, 80px); line-height: 0.95">
+            Your<br>Name
+          </h1>
+          <div class="font-mono text-lg text-cyan mb-7 tracking-wide">@your_handle</div>
+          <p class="text-[15px] text-dim leading-relaxed max-w-[520px]">
+            CTF player đam mê cryptography và web security. Chơi CTF từ năm 2021, chuyên về Crypto và Web categories.
+            Thích những challenge ẩn logic trong narrative thay vì chỉ để lộ thẳng trong source code.
+          </p>
+          <p class="text-[15px] text-dim leading-relaxed max-w-[520px] mt-4">
+            Blog này là nơi tôi document lại quá trình giải — không chỉ lời giải, mà cả con đường suy nghĩ,
+            các ngõ cụt, và khoảnh khắc "aha".
+          </p>
+        </div>
+
+        <!-- Stats card -->
+        <div class="border border-border relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan to-green"></div>
+          <div class="p-8">
+            <div class="text-4xl mb-6">🧑‍💻</div>
+            <div class="grid grid-cols-2 gap-5 mb-6">
+              {[['42', 'Writeups'], ['7', '1st Blood'], ['18', 'Events'], ['Top 5%', 'CTFtime']].map(([n,l]) => (
+                <div>
+                  <div class="font-display font-800 text-[28px] text-cyan tracking-[-1px] leading-none mb-1">{n}</div>
+                  <div class="font-mono text-[10px] tracking-[1px] text-mute uppercase">{l}</div>
+                </div>
+              ))}
+            </div>
+            <div class="flex gap-2">
+              {[['GitHub', '#'], ['CTFtime', '#'], ['Twitter', '#']].map(([label, href]) => (
+                <a href={href} class="flex-1 font-mono text-[10px] tracking-[1px] uppercase py-2 text-center border border-border text-dim hover:border-cyan hover:text-cyan hover:bg-cyan/6 transition-all">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="section-label mb-9">
+        <span class="section-label-text">// skills & tools</span>
+        <div class="section-label-line"></div>
+      </div>
+
+      <SkillBars client:visible />
+
+      <!-- Timeline -->
+      <div class="section-label mb-9 mt-20">
+        <span class="section-label-text">// journey</span>
+        <div class="section-label-line"></div>
+      </div>
+
+      <div class="relative mb-20">
+        <!-- Vertical line -->
+        <div class="absolute left-5 top-0 bottom-0 w-px bg-border"></div>
+
+        {[
+          { year: '2024', icon: '🏆', title: 'Top 10 — GoogleCTF 2024', desc: 'Giải được 3 challenge crypto trong top 10 fastest solves. Writeup cho "Papi Cris" được community share rộng rãi.' },
+          { year: '2023', icon: '📝', title: 'Ra mắt 0xBlog', desc: 'Bắt đầu viết writeup có hệ thống thay vì ghi note rời rạc. Tập trung vào storytelling trong giải thích kỹ thuật.' },
+          { year: '2022', icon: '⚡', title: 'First 1st Blood — PicoCTF', desc: 'Lần đầu tiên solve trước mọi người trong một crypto challenge. Cảm giác không thể diễn tả.' },
+          { year: '2021', icon: '🌱', title: 'Bắt đầu chơi CTF', desc: 'Challenge đầu tiên là Caesar cipher. Mất 2 tiếng. Nhưng cái cảm giác khi flag hiện ra đó đã thay đổi mọi thứ.' },
+        ].map(item => (
+          <div class="flex gap-7 mb-9 group">
+            <div class="w-10 h-10 border border-b2 bg-surface flex items-center justify-center text-base relative z-1 flex-shrink-0 group-hover:border-cyan transition-colors">
+              {item.icon}
+            </div>
+            <div class="pt-1.5">
+              <div class="font-mono text-[10px] tracking-[2px] text-mute uppercase mb-1.5">{item.year}</div>
+              <div class="font-display font-700 text-bright text-lg mb-1.5">{item.title}</div>
+              <p class="text-sm text-dim leading-relaxed">{item.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Setup -->
+      <div class="section-label mb-9">
+        <span class="section-label-text">// tools & setup</span>
+        <div class="section-label-line"></div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border border-border mb-20">
+        {[
+          ['🐍', 'Python 3',   'pwntools, PyCryptodome, sympy'],
+          ['🔧', 'IDA Pro',    'Reverse engineering chính'],
+          ['👻', 'Ghidra',     'NSA decompiler mạnh mẽ'],
+          ['🕷️', 'Burp Suite', 'Web proxy, scanner'],
+          ['🐧', 'Kali Linux', 'Main OS cho CTF'],
+          ['🔬', 'GDB+pwndbg', 'Debugger cho pwn'],
+          ['📊', 'SageMath',   'Toán cho crypto nâng cao'],
+          ['🎯', 'Frida',      'Dynamic instrumentation'],
+        ].map(([icon, name, desc]) => (
+          <div class="bg-surface p-5 flex gap-3 items-start hover:bg-s2 transition-colors">
+            <span class="text-xl flex-shrink-0 mt-0.5">{icon}</span>
+            <div>
+              <div class="font-display font-700 text-sm text-bright mb-0.5">{name}</div>
+              <div class="font-mono text-[11px] text-mute leading-relaxed">{desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </div>
+</Base>

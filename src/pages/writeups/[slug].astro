@@ -1,0 +1,117 @@
+---
+// src/pages/writeups/[slug].astro
+import Base from '../../layouts/Base.astro'
+import { getCollection, getEntry } from 'astro:content'
+import FlagReveal from '../../components/FlagReveal.vue'
+
+export async function getStaticPaths() {
+  const writeups = await getCollection('writeups', ({ data }) => !data.draft)
+  return writeups.map(w => ({ params: { slug: w.slug }, props: { writeup: w } }))
+}
+
+const { writeup } = Astro.props
+const { Content } = await writeup.render()
+
+const all = await getCollection('writeups', ({ data }) => !data.draft)
+const sorted = all.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+const idx = sorted.findIndex(w => w.slug === writeup.slug)
+const prev = sorted[idx + 1]
+const next = sorted[idx - 1]
+
+const tagColorMap: Record<string, string> = {
+  cyan: '#00d4ff', green: '#7fff6b', orange: '#ff6b35',
+  red: '#ff4757', purple: '#bd93f9', gold: '#ffd700',
+}
+---
+
+<Base title={writeup.data.title} description={writeup.data.description} showProgress={true}>
+  <article>
+
+    <!-- ── WRITEUP HEADER ── -->
+    <header class="pt-28 pb-16 border-b border-border mb-16 relative overflow-hidden">
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent"></div>
+      </div>
+      <div class="container-narrow">
+
+        <!-- breadcrumb -->
+        <div class="flex items-center gap-2 font-mono text-[11px] text-mute mb-6">
+          <a href="/" class="hover:text-cyan transition-colors">Home</a>
+          <span>›</span>
+          <a href="/writeups" class="hover:text-cyan transition-colors">Writeups</a>
+          <span>›</span>
+          <span class="text-dim">{writeup.data.title}</span>
+        </div>
+
+        <!-- tags row -->
+        <div class="flex items-center gap-2 flex-wrap mb-5">
+          <span class={`tag tag-${writeup.data.catColor}`}>{writeup.data.category}</span>
+          {writeup.data.tags.map((t: string) => (
+            <span class="tag tag-orange">{t}</span>
+          ))}
+          <div class={`diff diff-${writeup.data.difficulty} ml-2`}>
+            <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+          </div>
+          <span class="font-mono text-[11px] text-mute capitalize">{writeup.data.difficulty}</span>
+        </div>
+
+        <!-- title -->
+        <h1 class="font-display font-800 text-bright mb-5 tracking-tight leading-tight"
+            style="font-size: clamp(32px, 5vw, 58px); letter-spacing: -2px">
+          {writeup.data.title}
+        </h1>
+
+        <p class="text-[15px] text-dim leading-relaxed mb-8 max-w-[600px]">
+          {writeup.data.description}
+        </p>
+
+        <!-- meta bar -->
+        <div class="flex items-center gap-5 font-mono text-[11px] text-mute flex-wrap">
+          <span>
+            📅 {new Date(writeup.data.date).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
+          {writeup.data.event && <span>🏆 {writeup.data.event}</span>}
+          {writeup.data.readTime && <span>⏱ {writeup.data.readTime} min read</span>}
+        </div>
+      </div>
+    </header>
+
+    <!-- ── BODY ── -->
+    <div class="container-narrow mb-16">
+      <div class="prose">
+        <Content />
+      </div>
+
+      <!-- Flag reveal -->
+      {writeup.data.flag && (
+        <div class="mt-16">
+          <FlagReveal client:visible flag={writeup.data.flag} />
+        </div>
+      )}
+    </div>
+
+    <!-- ── PREV / NEXT ── -->
+    <div class="container-narrow mb-20">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-border border border-border">
+        {prev ? (
+          <a href={`/writeups/${prev.slug}`} class="bg-surface hover:bg-s2 transition-colors p-6 group">
+            <div class="font-mono text-[10px] text-mute mb-2 tracking-wider">← PREV</div>
+            <div class="font-display font-700 text-bright group-hover:text-cyan transition-colors">
+              {prev.data.title}
+            </div>
+          </a>
+        ) : <div class="bg-surface p-6"></div>}
+
+        {next ? (
+          <a href={`/writeups/${next.slug}`} class="bg-surface hover:bg-s2 transition-colors p-6 text-right group">
+            <div class="font-mono text-[10px] text-mute mb-2 tracking-wider">NEXT →</div>
+            <div class="font-display font-700 text-bright group-hover:text-cyan transition-colors">
+              {next.data.title}
+            </div>
+          </a>
+        ) : <div class="bg-surface p-6"></div>}
+      </div>
+    </div>
+
+  </article>
+</Base>
