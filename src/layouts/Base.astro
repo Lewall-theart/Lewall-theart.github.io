@@ -1,106 +1,101 @@
 ---
-// src/layouts/Base.astro
 import '../styles/global.css'
 import SearchModal from '../components/SearchModal.vue'
 import Navbar from '../components/Navbar.vue'
-
-interface Props {
-  title: string
-  description?: string
-  showProgress?: boolean
-}
-
-const { title, description = 'CTF writeups, crypto breakdowns, and hacking notes.', showProgress = false } = Astro.props
+import ParticleBackground from '../components/ParticleBackground.vue'
+interface Props { title:string; description?:string; showProgress?:boolean }
+const { title, description='CTF writeups, crypto breakdowns, and hacking notes.', showProgress=false } = Astro.props
 const currentPath = Astro.url.pathname
 ---
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content={description} />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="description" content={description}/>
   <title>{title} — 0xBlog</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content={`${title} — 0xBlog`} />
-  <meta property="og:description" content={description} />
-  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <link rel="alternate" type="application/rss+xml" title="0xBlog RSS" href="/rss.xml"/>
+  <meta property="og:title" content={`${title} — 0xBlog`}/>
+  <meta property="og:description" content={description}/>
 </head>
 <body>
-
-  <!-- Read progress bar (writeup pages only) -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
   {showProgress && <div id="read-progress"></div>}
-
-  <!-- Vue Islands -->
+  <ParticleBackground client:load />
   <SearchModal client:load />
   <Navbar client:load currentPath={currentPath} />
-
-  <!-- Page content -->
   <main class="relative z-1">
     <slot />
   </main>
-
-  <!-- Footer -->
-  <footer class="mt-30 border-t border-border pt-15 pb-10 relative z-1">
-    <div class="container">
-      <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-15 mb-12">
+  <footer class="ft">
+    <div class="ft-inner">
+      <div class="ft-grid">
         <div>
-          <div class="font-display font-800 text-xl text-bright mb-3 tracking-tight">0xBlog</div>
-          <p class="text-sm text-dim leading-relaxed max-w-[280px]">
-            Ghi lại hành trình phá mã, khai thác lỗ hổng, và học hỏi qua từng thử thách CTF.
-          </p>
+          <div class="ft-brand"><span class="ft-icon">0x</span><span>Blog</span></div>
+          <p class="ft-desc">Ghi lại hành trình phá mã, khai thác lỗ hổng, và học hỏi qua từng thử thách CTF.</p>
+          <div class="ft-azki">♪ Powered by curiosity &amp; AZKi music</div>
         </div>
         <div>
-          <div class="font-mono text-[10px] tracking-[2px] uppercase text-mute mb-4">Navigation</div>
-          <ul class="flex flex-col gap-2.5">
-            {[['/', 'Home'], ['/writeups', 'Writeups'], ['/categories', 'Categories'], ['/about', 'About']].map(([href, label]) => (
-              <li>
-                <a href={href} class="text-sm text-dim hover:text-cyan transition-colors flex items-center gap-2 group">
-                  <span class="text-mute group-hover:text-cyan transition-colors">›</span>
-                  {label}
-                </a>
-              </li>
+          <div class="ft-col-title">Navigation</div>
+          <ul class="ft-links">
+            {[['/', 'Home'],['/writeups','Writeups'],['/tags','Tags'],['/about','About']].map(([h,l]) => (
+              <li><a href={h} class="ft-link"><span>›</span>{l}</a></li>
             ))}
           </ul>
         </div>
         <div>
-          <div class="font-mono text-[10px] tracking-[2px] uppercase text-mute mb-4">Categories</div>
-          <ul class="flex flex-col gap-2.5">
-            {[['crypto', '🔐 Crypto'], ['web', '🌐 Web'], ['pwn', '💥 Pwn'], ['rev', '🔍 Reverse']].map(([cat, label]) => (
-              <li>
-                <a href={`/categories/${cat}`} class="text-sm text-dim hover:text-cyan transition-colors flex items-center gap-2 group">
-                  <span class="text-mute group-hover:text-cyan transition-colors">›</span>
-                  {label}
-                </a>
-              </li>
+          <div class="ft-col-title">Categories</div>
+          <ul class="ft-links">
+            {[['crypto','🔐 Crypto'],['web','🌐 Web'],['pwn','💥 Pwn'],['rev','🔍 Rev']].map(([c,l]) => (
+              <li><a href={`/tags/${c}`} class="ft-link"><span>›</span>{l}</a></li>
             ))}
           </ul>
         </div>
       </div>
-      <div class="flex justify-between items-center pt-6 border-t border-border flex-wrap gap-3">
-        <span class="font-mono text-[11px] text-mute">© 2024 0xBlog · Built with Astro + Vue · GitHub Pages</span>
-        <div class="flex gap-2">
-          <a href="https://github.com" class="w-8 h-8 border border-border flex items-center justify-center text-dim hover:border-cyan hover:text-cyan hover:bg-cyan/6 transition-all" title="GitHub">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-          </a>
+      <div class="ft-bottom">
+        <span class="ft-copy">© 2024 0xBlog · Astro + Vue 3 · GitHub Pages</span>
+        <div class="ft-socials">
+          <a href="/rss.xml" class="ft-soc" title="RSS">📡</a>
+          <a href="https://github.com" class="ft-soc" title="GitHub">⌥</a>
         </div>
       </div>
     </div>
   </footer>
-
-  {showProgress && (
-    <script>
-      const bar = document.getElementById('read-progress')
-      if (bar) {
-        window.addEventListener('scroll', () => {
-          const h = document.documentElement.scrollHeight - window.innerHeight
-          bar.style.width = (window.scrollY / h * 100) + '%'
-        }, { passive: true })
-      }
-    </script>
-  )}
-
 </body>
 </html>
+<script>
+// Cursor
+const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring')
+let mx=-100,my=-100,rx=-100,ry=-100
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;if(dot){dot.style.left=mx+'px';dot.style.top=my+'px'}})
+;(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;if(ring){ring.style.left=rx+'px';ring.style.top=ry+'px'}requestAnimationFrame(tick)})()
+document.querySelectorAll('a,button,[role="button"]').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'))
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'))
+})
+// Read progress
+const bar=document.getElementById('read-progress')
+if(bar)window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(window.scrollY/h*100)+'%'},{passive:true})
+</script>
+<style>
+.ft{margin-top:120px;border-top:1px solid var(--border);padding:60px 0 40px;}
+.ft-inner{max-width:1100px;margin:0 auto;padding:0 40px;}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:60px;margin-bottom:48px;}
+.ft-brand{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--bright);margin-bottom:12px;letter-spacing:-.5px;}
+.ft-icon{width:32px;height:32px;border:1px solid var(--azki-violet);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:12px;color:var(--azki-violet);background:rgba(155,109,255,.06);}
+.ft-desc{font-size:13px;color:var(--dim);line-height:1.7;max-width:280px;margin-bottom:12px;}
+.ft-azki{font-family:'Space Mono',monospace;font-size:11px;color:var(--azki-pink);}
+.ft-col-title{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+.ft-links{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.ft-link{font-size:13px;color:var(--dim);transition:color .2s;display:flex;align-items:center;gap:8px;}
+.ft-link:hover{color:var(--azki-pink);}
+.ft-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:12px;}
+.ft-copy{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);}
+.ft-socials{display:flex;gap:8px;}
+.ft-soc{width:32px;height:32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);transition:all .2s;font-size:14px;}
+.ft-soc:hover{border-color:var(--azki-pink);color:var(--azki-pink);background:rgba(255,110,180,.06);}
+@media(max-width:768px){.ft-inner{padding:0 20px;}.ft-grid{grid-template-columns:1fr 1fr;gap:40px;}.ft-grid>:first-child{grid-column:1/-1;}}
+@media(max-width:480px){.ft-grid{grid-template-columns:1fr;}}
+</style>

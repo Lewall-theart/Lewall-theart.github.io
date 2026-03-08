@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro'
+import { getCollection } from 'astro:content'
+const all = await getCollection('writeups', ({data})=>!data.draft)
+const tagMap: Record<string, number> = {}
+all.forEach(w => w.data.tags.forEach((t:string) => { tagMap[t] = (tagMap[t]||0) + 1 }))
+const tags = Object.entries(tagMap).sort((a,b) => b[1]-a[1])
+const catMap: Record<string, number> = {}
+all.forEach(w => { catMap[w.data.category] = (catMap[w.data.category]||0)+1 })
+const cats = Object.entries(catMap).sort((a,b)=>b[1]-a[1])
+---
+<Base title="Tags">
+  <div class="pt-28 pb-20">
+    <div class="container">
+      <header class="border-b border-border pb-14 mb-14">
+        <div class="label">// browse by tag</div>
+        <h1 class="page-title">Tags</h1>
+        <p class="page-desc">Lọc writeup theo tag, category, hoặc tool.</p>
+      </header>
+      <div class="section-label"><span class="sl-text">// categories</span><div class="sl-line"></div></div>
+      <div class="cat-grid mb-16">
+        {cats.map(([cat, count]) => (
+          <a href={`/tags/${cat.toLowerCase()}`} class="cat-card">
+            <span class="cat-icon">{cat==='Crypto'?'🔐':cat==='Web'?'🌐':cat==='Pwn'?'💥':cat==='Reverse'?'🔍':cat==='Misc'?'🎲':'🧬'}</span>
+            <span class="cat-name">{cat}</span>
+            <span class="cat-count">{count}</span>
+          </a>
+        ))}
+      </div>
+      <div class="section-label"><span class="sl-text">// all tags ({tags.length})</span><div class="sl-line"></div></div>
+      <div class="tags-grid">
+        {tags.map(([tag, count]) => (
+          <a href={`/tags/${tag.toLowerCase()}`} class="tag-item">
+            <span class="tag-name">{tag}</span>
+            <span class="tag-count">{count}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>
+<style>
+.container{max-width:1100px;margin:0 auto;padding:0 40px;}
+.label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(40px,7vw,72px);letter-spacing:-3px;color:var(--bright);margin-bottom:16px;}
+.page-desc{font-size:14px;color:var(--dim);max-width:480px;}
+.section-label{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.sl-text{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);white-space:nowrap;}
+.sl-line{flex:1;height:1px;background:var(--border);}
+.mb-16{margin-bottom:64px;}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);}
+.cat-card{background:var(--surface);padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:background .2s;}
+.cat-card:hover{background:var(--s2);}
+.cat-icon{font-size:22px;}
+.cat-name{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:14px;}
+.cat-count{font-family:'Space Mono',monospace;font-size:11px;color:var(--azki-pink);}
+.tags-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.tag-item{display:flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--border);background:var(--surface);transition:all .2s;}
+.tag-item:hover{border-color:var(--azki-violet);background:rgba(155,109,255,.06);}
+.tag-name{font-family:'Space Mono',monospace;font-size:12px;color:var(--text);}
+.tag-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--azki-violet);background:rgba(155,109,255,.1);padding:1px 6px;}
+@media(max-width:600px){.container{padding:0 20px;}}
+</style>

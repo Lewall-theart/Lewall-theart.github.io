@@ -1,7 +1,7 @@
 {
   "name": "0xblog",
   "type": "module",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^3.0.0",
+    "@astrojs/rss": "^4.0.0",
     "@astrojs/vue": "^4.0.0",
     "astro": "^4.0.0",
     "motion": "^10.18.0",

@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro'
+import { getCollection } from 'astro:content'
+import WriteupFilter from '../../components/WriteupFilter.vue'
+export async function getStaticPaths() {
+  const all = await getCollection('writeups', ({data})=>!data.draft)
+  const tags = new Set<string>()
+  all.forEach(w=>[...w.data.tags, w.data.category].forEach((t:string)=>tags.add(t.toLowerCase())))
+  return [...tags].map(tag=>({params:{tag},props:{tag}}))
+}
+const {tag} = Astro.props
+const all = await getCollection('writeups',({data})=>!data.draft)
+const filtered = all.filter(w=>
+  w.data.tags.some((t:string)=>t.toLowerCase()===tag) ||
+  w.data.category.toLowerCase()===tag
+).sort((a,b)=>new Date(b.data.date).getTime()-new Date(a.data.date).getTime())
+const items = filtered.map(w=>({
+  slug:w.slug,title:w.data.title,description:w.data.description,
+  category:w.data.category,catColor:w.data.catColor??'cyan',
+  difficulty:w.data.difficulty,tags:w.data.tags,
+  date:w.data.date.toISOString(),event:w.data.event,readTime:w.data.readTime
+}))
+---
+<Base title={`Tag: ${tag}`}>
+  <div class="pt-28 pb-20">
+    <div class="container">
+      <header class="border-b border-border pb-14 mb-14">
+        <div class="label">// tag</div>
+        <h1 class="page-title"><span class="tag-prefix">#</span>{tag}</h1>
+        <p class="page-desc">{filtered.length} writeup{filtered.length!==1?'s':''} với tag này</p>
+        <a href="/tags" class="back-link">← All Tags</a>
+      </header>
+      <WriteupFilter client:load items={items} />
+    </div>
+  </div>
+</Base>
+<style>
+.container{max-width:1100px;margin:0 auto;padding:0 40px;}
+.label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(40px,7vw,72px);letter-spacing:-3px;color:var(--bright);margin-bottom:12px;}
+.tag-prefix{color:var(--azki-violet);}
+.page-desc{font-size:14px;color:var(--dim);max-width:480px;margin-bottom:16px;}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);padding:6px 14px;display:inline-flex;transition:all .2s;}
+.back-link:hover{border-color:var(--cyan);color:var(--cyan);}
+@media(max-width:600px){.container{padding:0 20px;}}
+</style>

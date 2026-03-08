@@ -28,9 +28,9 @@ export default defineConfig({
       bright:  '#e6edf3',
     },
     fontFamily: {
-      display: 'Syne, sans-serif',
-      mono:    '"Space Mono", monospace',
-      body:    '"IBM Plex Mono", monospace',
+      display: ['Syne', 'sans-serif'],
+      mono:    ['"Space Mono"', 'monospace'],
+      body:    ['"IBM Plex Mono"', 'monospace'],
     },
   },
 

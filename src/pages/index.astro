@@ -1,157 +1,182 @@
 ---
-// src/pages/index.astro
 import Base from '../layouts/Base.astro'
 import { getCollection } from 'astro:content'
 import HeroTerminal from '../components/HeroTerminal.vue'
 import CountUp from '../components/CountUp.vue'
 import CategoryBars from '../components/CategoryBars.vue'
-
-const allWriteups = await getCollection('writeups')
-const recent = allWriteups
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-  .slice(0, 5)
-
-const featured = allWriteups.find(w => w.data.featured) ?? recent[0]
+import NowPlaying from '../components/NowPlaying.vue'
+const all = await getCollection('writeups', ({data})=>!data.draft)
+const recent = [...all].sort((a,b)=>new Date(b.data.date).getTime()-new Date(a.data.date).getTime()).slice(0,5)
+const featured = all.find(w=>w.data.featured) ?? recent[0]
+const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
 ---
-
 <Base title="Home">
-
-  <!-- ── HERO ── -->
-  <section class="relative pt-40 pb-25 overflow-hidden">
-    <!-- BG glow -->
-    <div class="absolute inset-0 pointer-events-none">
-      <div class="absolute top-[20%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(0,212,255,0.06)_0%,transparent_70%)]"></div>
-    </div>
-    <!-- Corner brackets -->
-    <div class="absolute top-[80px] left-10 w-20 h-20 border-t border-l border-cyan/15"></div>
-    <div class="absolute bottom-10 right-10 w-20 h-20 border-b border-r border-cyan/15"></div>
-
-    <div class="container relative z-1">
-      <div class="flex items-center gap-3 mb-7 animate-[fadeUp_0.6s_ease_both]">
-        <div class="w-2 h-2 rounded-full bg-green" style="animation: heartbeat 2s infinite"></div>
-        <span class="font-mono text-[11px] tracking-[3px] uppercase text-green">CTF Writeups &amp; Notes</span>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-bracket tl"></div>
+    <div class="hero-bracket br"></div>
+    <div class="container hero-inner">
+      <div class="hero-badge">
+        <div class="hero-dot"></div>
+        <span>CTF Writeups &amp; Notes</span>
       </div>
-
-      <h1 class="font-display font-800 leading-[0.95] tracking-[-4px] text-bright mb-7 animate-[fadeUp_0.6s_0.1s_ease_both] opacity-0" style="font-size: clamp(52px,9vw,100px); animation-fill-mode: forwards">
+      <h1 class="hero-title">
         BREAK.<br>
-        <span class="text-cyan">ANALYZE.</span><br>
-        <span class="text-mute font-400 text-[0.55em] tracking-[-2px]">Document.</span>
+        <span class="hero-cyan">ANALYZE.</span><br>
+        <span class="hero-sub">Document.</span>
       </h1>
-
-      <p class="max-w-[500px] text-[15px] text-dim leading-relaxed mb-10 animate-[fadeUp_0.6s_0.2s_ease_both] opacity-0" style="animation-fill-mode: forwards">
-        Tài liệu hóa hành trình giải các thử thách CTF — từ RSA bị gãy, SQL injection lách luật,
-        đến reverse engineering không có mercy.
+      <p class="hero-desc">
+        Tài liệu hóa hành trình giải CTF — từ RSA bị gãy, SQL injection lách luật,
+        đến reverse engineering không có mercy. Có cả nhạc AZKi để code cho đỡ buồn.
       </p>
-
-      <div class="flex gap-4 flex-wrap animate-[fadeUp_0.6s_0.3s_ease_both] opacity-0" style="animation-fill-mode: forwards">
-        <a href="/writeups" class="btn-primary btn">
-          <span>⬡</span> Xem Writeups
-        </a>
-        <a href="/about" class="btn-ghost btn">
-          <span>◎</span> About
-        </a>
+      <div class="hero-actions">
+        <a href="/writeups" class="btn-primary">⬡ Xem Writeups</a>
+        <a href="/about" class="btn-ghost">◎ About</a>
+      </div>
+      <!-- AZKi NowPlaying widget -->
+      <div class="hero-np">
+        <NowPlaying client:load />
       </div>
     </div>
   </section>
 
-  <div class="container relative z-1">
-
-    <!-- ── STATS ── -->
-    <div class="grid grid-cols-2 md:grid-cols-4 border border-border mb-20 animate-[fadeUp_0.6s_0.4s_ease_both] opacity-0" style="animation-fill-mode: forwards">
-      <CountUp client:visible target={allWriteups.length} label="Writeups" />
+  <div class="container">
+    <!-- STATS -->
+    <div class="stats-row">
+      <CountUp client:visible target={all.length} label="Writeups" />
       <CountUp client:visible target={6} label="Categories" />
       <CountUp client:visible target={18} label="CTF Events" />
       <CountUp client:visible target={7} label="1st Bloods" />
     </div>
 
-    <!-- ── FEATURED ── -->
-    <div class="section-label mb-9">
-      <span class="section-label-text">// featured writeup</span>
-      <div class="section-label-line"></div>
-    </div>
-
+    <!-- FEATURED -->
+    <div class="section-label"><span class="sl-text">// featured writeup</span><div class="sl-line"></div></div>
     {featured && (
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] border border-border mb-20 relative overflow-hidden group">
-        <!-- Top accent line -->
-        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan to-green z-10"></div>
-
-        <!-- Content -->
-        <a href={`/writeups/${featured.slug}`} class="p-10 bg-surface hover:bg-s2 transition-colors flex flex-col gap-5">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="tag-cyan tag">{featured.data.category}</span>
-            {featured.data.tags.slice(0,2).map((t: string) => (
-              <span class="tag-orange tag">{t}</span>
-            ))}
-            {featured.data.featured && <span class="tag-green tag">FEATURED</span>}
+      <div class="featured">
+        <div class="featured-top"></div>
+        <a href={`/writeups/${featured.slug}`} class="featured-content">
+          <div class="featured-tags">
+            <span class={`tag tag-${featured.data.catColor??'cyan'}`}>{featured.data.category}</span>
+            {featured.data.tags.slice(0,2).map((t:string)=><span class="tag tag-orange">{t}</span>)}
+            {featured.data.featured && <span class="tag tag-green">FEATURED</span>}
           </div>
-
-          <h2 class="font-display font-800 text-bright leading-tight tracking-tight hover:text-cyan transition-colors"
-              style="font-size: clamp(24px, 3vw, 36px)">
-            {featured.data.title}
-          </h2>
-
-          <p class="text-sm text-dim leading-relaxed">{featured.data.description}</p>
-
-          <div class="flex items-center gap-4 font-mono text-[11px] text-mute mt-auto pt-4 border-t border-border">
-            <div class={`diff diff-${featured.data.difficulty}`}>
-              <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
-            </div>
+          <h2 class="featured-title">{featured.data.title}</h2>
+          <p class="featured-desc">{featured.data.description}</p>
+          <div class="featured-meta">
+            <div class={`diff diff-${featured.data.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
             <span class="capitalize">{featured.data.difficulty}</span>
-            <span>·</span>
-            <span>{featured.data.event ?? 'CTF 2024'}</span>
-            <span>·</span>
-            <span>{featured.data.readTime ?? '8'} min read</span>
+            <span>·</span><span>{featured.data.event??'CTF 2024'}</span>
+            <span>·</span><span>{featured.data.readTime??8} min read</span>
           </div>
         </a>
-
-        <!-- Terminal visual -->
         <HeroTerminal client:visible slug={featured.slug} flag={featured.data.flag} />
       </div>
     )}
 
-    <!-- ── CATEGORIES ── -->
-    <div class="section-label mb-9">
-      <span class="section-label-text">// categories</span>
-      <div class="section-label-line"></div>
+    <!-- TAGS CLOUD -->
+    <div class="section-label mt-16"><span class="sl-text">// popular tags</span><div class="sl-line"></div><a href="/tags" class="btn-ghost btn-sm">All tags →</a></div>
+    <div class="tags-cloud">
+      {allTags.map(tag=>(
+        <a href={`/tags/${tag.toLowerCase()}`} class="tag-pill">{tag}</a>
+      ))}
     </div>
 
-    <CategoryBars client:visible writeups={allWriteups.map(w => ({ category: w.data.category }))} />
+    <!-- CATEGORIES -->
+    <div class="section-label mt-16"><span class="sl-text">// categories</span><div class="sl-line"></div></div>
+    <CategoryBars client:visible writeups={all.map(w=>({category:w.data.category}))} />
 
-    <!-- ── RECENT ── -->
-    <div class="section-label mb-6 mt-20">
-      <span class="section-label-text">// recent writeups</span>
-      <div class="section-label-line"></div>
-      <a href="/writeups" class="btn-ghost btn" style="padding: 6px 16px; font-size: 10px;">View All →</a>
-    </div>
-
-    <div class="flex flex-col border border-border mb-20">
-      {recent.map((w, i) => (
-        <a href={`/writeups/${w.slug}`}
-           class="grid items-center gap-5 px-6 py-4 border-b border-border last:border-b-0 hover:bg-surface transition-colors group"
-           style="grid-template-columns: 52px 1fr auto">
-          <span class="font-mono text-[11px] text-mute text-right">
-            {String(i+1).padStart(2,'0')}
-          </span>
-          <div>
-            <div class="font-display font-700 text-bright text-[15px] group-hover:text-cyan transition-colors">
-              {w.data.title}
-            </div>
-            <div class="flex items-center gap-2 mt-1">
-              <span class={`tag tag-${w.data.catColor ?? 'cyan'}`} style="font-size:9px">{w.data.category}</span>
-              <span class="text-[12px] text-mute">{w.data.description?.slice(0,60)}...</span>
+    <!-- RECENT -->
+    <div class="section-label mt-16 mb-6"><span class="sl-text">// recent writeups</span><div class="sl-line"></div><a href="/writeups" class="btn-ghost btn-sm">View All →</a></div>
+    <div class="recent-list">
+      {recent.map((w,i)=>(
+        <a href={`/writeups/${w.slug}`} class="recent-item">
+          <span class="recent-num">{String(i+1).padStart(2,'0')}</span>
+          <div class="recent-body">
+            <div class="recent-title">{w.data.title}</div>
+            <div class="recent-meta">
+              <span class={`tag tag-${w.data.catColor??'cyan'}`} style="font-size:9px">{w.data.category}</span>
+              <span class="recent-excerpt">{w.data.description?.slice(0,55)}...</span>
             </div>
           </div>
-          <div class="hidden md:flex items-center gap-3">
-            <div class={`diff diff-${w.data.difficulty}`}>
-              <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
-            </div>
-            <span class="font-mono text-[11px] text-mute">
-              {new Date(w.data.date).toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' })}
-            </span>
+          <div class="recent-right">
+            <div class={`diff diff-${w.data.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+            <span class="recent-date">{new Date(w.data.date).toLocaleDateString('vi-VN',{month:'short',year:'numeric'})}</span>
           </div>
         </a>
       ))}
     </div>
-
   </div>
 </Base>
+
+<style>
+.container{max-width:1100px;margin:0 auto;padding:0 40px;}
+/* Hero */
+.hero{position:relative;padding:160px 0 100px;overflow:hidden;}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse at center,rgba(0,212,255,.06) 0%,transparent 70%);pointer-events:none;}
+.hero-bracket{position:absolute;width:80px;height:80px;}
+.hero-bracket.tl{top:80px;left:40px;border-top:1px solid rgba(0,212,255,.15);border-left:1px solid rgba(0,212,255,.15);}
+.hero-bracket.br{bottom:40px;right:40px;border-bottom:1px solid rgba(0,212,255,.15);border-right:1px solid rgba(0,212,255,.15);}
+.hero-inner{position:relative;z-index:1;}
+.hero-badge{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green);}
+.hero-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:heartbeat 2s infinite;}
+.hero-title{font-family:'Syne',sans-serif;font-weight:800;line-height:.95;letter-spacing:-4px;color:var(--bright);margin-bottom:28px;font-size:clamp(52px,9vw,100px);}
+.hero-cyan{color:var(--cyan);}
+.hero-sub{color:var(--mute);font-weight:400;font-size:.55em;letter-spacing:-2px;}
+.hero-desc{max-width:520px;font-size:15px;color:var(--dim);line-height:1.75;margin-bottom:36px;}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:36px;}
+.btn-primary{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06);display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-primary:hover{background:rgba(0,212,255,.12);box-shadow:0 0 20px rgba(0,212,255,.2);}
+.btn-ghost{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:1px solid var(--b2);color:var(--dim);display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--dim);color:var(--text);}
+.btn-sm{padding:6px 16px;font-size:10px;}
+.hero-np{max-width:400px;}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);margin-bottom:80px;}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+
+/* Section label */
+.section-label{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.sl-text{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);white-space:nowrap;}
+.sl-line{flex:1;height:1px;background:var(--border);}
+.mt-16{margin-top:64px;}
+.mb-6{margin-bottom:24px;}
+
+/* Tags cloud */
+.tags-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0;}
+.tag-pill{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;padding:6px 14px;border:1px solid var(--border);color:var(--dim);transition:all .2s;background:var(--surface);}
+.tag-pill:hover{border-color:var(--azki-pink);color:var(--azki-pink);background:rgba(255,110,180,.06);}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border:1px solid;}
+.tag-cyan{color:#00d4ff;border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
+.tag-green{color:#7fff6b;border-color:rgba(127,255,107,.4);background:rgba(127,255,107,.06);}
+.tag-orange{color:#ff6b35;border-color:rgba(255,107,53,.4);background:rgba(255,107,53,.06);}
+
+/* Featured */
+.featured{display:grid;grid-template-columns:1fr 300px;border:1px solid var(--border);margin-bottom:0;position:relative;overflow:hidden;}
+.featured-top{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--azki-pink),var(--green));z-index:1;}
+.featured-content{padding:40px;background:var(--surface);display:flex;flex-direction:column;gap:20px;transition:background .2s;}
+.featured-content:hover{background:var(--s2);}
+.featured-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.featured-title{font-family:'Syne',sans-serif;font-weight:800;color:var(--bright);font-size:clamp(22px,3vw,34px);letter-spacing:-1px;line-height:1.15;transition:color .2s;}
+.featured-content:hover .featured-title{color:var(--cyan);}
+.featured-desc{font-size:14px;color:var(--dim);line-height:1.7;}
+.featured-meta{display:flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
+@media(max-width:768px){.featured{grid-template-columns:1fr;}}
+
+/* Recent */
+.recent-list{border:1px solid var(--border);}
+.recent-item{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:20px;padding:16px 24px;border-bottom:1px solid var(--border);transition:background .2s;}
+.recent-item:last-child{border-bottom:none;}
+.recent-item:hover{background:var(--surface);}
+.recent-num{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);text-align:right;}
+.recent-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:15px;transition:color .2s;margin-bottom:4px;}
+.recent-item:hover .recent-title{color:var(--cyan);}
+.recent-meta{display:flex;align-items:center;gap:8px;}
+.recent-excerpt{font-size:12px;color:var(--mute);}
+.recent-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.recent-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);}
+@media(max-width:600px){.recent-right{display:none;}.container{padding:0 20px;}}
+</style>
