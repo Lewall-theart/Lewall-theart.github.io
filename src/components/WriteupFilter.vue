@@ -121,7 +121,7 @@ function setDiff(d: string)   { activeDiff.value = d }
   text-transform: uppercase; padding: 6px 14px;
   border: 1px solid var(--border); color: var(--dim);
   background: none; cursor: pointer;
-  transition: all 0.2s; capitalize;
+  transition: all 0.2s;
 }
 .filter-btn:hover, .filter-btn.active {
   border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.06);
