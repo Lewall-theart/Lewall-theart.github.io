@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papi Cris' Fortune — CTF Writeup</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --surface2: #141b23;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6b;
+    --text: #c9d1d9;
+    --text-dim: #6e7681;
+    --text-bright: #e6edf3;
+    --red: #ff4757;
+    --gold: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    line-height: 1.8;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 32px;
+    animation: pulse-border 2s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 0 4px rgba(0,212,255,0); }
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 7vw, 68px);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--text-bright);
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+
+  .hero h1 span {
+    color: var(--accent);
+    position: relative;
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .meta-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .meta-item .dot.red { background: var(--red); }
+  .meta-item .dot.orange { background: var(--accent2); }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 56px 0 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .step-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .section-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.5px;
+  }
+
+  /* ── PROSE ── */
+  p {
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .lead {
+    font-size: 17px;
+    color: var(--text-bright);
+    line-height: 1.7;
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+    margin-bottom: 28px;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 20px 24px;
+    margin: 28px 0;
+    position: relative;
+  }
+
+  .callout::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -1px; left: 20px;
+    transform: translateY(-50%);
+    background: var(--accent2);
+    color: var(--bg);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 2px 10px;
+  }
+
+  .callout.success { border-left-color: var(--accent3); }
+  .callout.success::before { background: var(--accent3); }
+  .callout.info { border-left-color: var(--accent); }
+  .callout.info::before { background: var(--accent); }
+  .callout.danger { border-left-color: var(--red); }
+  .callout.danger::before { background: var(--red); }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin: 24px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .code-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .code-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .code-dots span:nth-child(1) { background: #ff5f56; }
+  .code-dots span:nth-child(2) { background: #ffbd2e; }
+  .code-dots span:nth-child(3) { background: #27c93f; }
+
+  pre {
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #abb2bf;
+  }
+
+  .kw { color: #c678dd; }
+  .fn { color: #61afef; }
+  .str { color: #98c379; }
+  .num { color: #d19a66; }
+  .cm { color: #5c6370; font-style: italic; }
+  .var { color: #e06c75; }
+  .op { color: #56b6c2; }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.15);
+    padding: 1px 7px;
+    color: var(--accent);
+  }
+
+  /* ── HINT CARDS ── */
+  .hint-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .hint-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .hint-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .hint-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .hint-card:hover::after { transform: scaleX(1); }
+
+  .hint-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+  }
+
+  .hint-quote {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 12px;
+    line-height: 1.6;
+    border-left: 2px solid var(--border);
+    padding-left: 10px;
+  }
+
+  .hint-meaning {
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: 'Space Mono', monospace;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .hint-meaning::before {
+    content: '→';
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+
+  .hint-card.red .hint-meaning { color: var(--red); }
+  .hint-card.red .hint-meaning::before { color: var(--red); }
+
+  /* ── MATH DISPLAY ── */
+  .math-display {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 24px 32px;
+    margin: 24px 0;
+    text-align: center;
+  }
+
+  .math-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    color: var(--text-bright);
+    margin: 8px 0;
+    letter-spacing: 1px;
+  }
+
+  .math-line .var { color: var(--accent2); }
+  .math-line .accent { color: var(--accent); }
+
+  /* ── STEPS FLOW ── */
+  .steps {
+    margin: 28px 0;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .step-item {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--bg);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-content { padding-top: 8px; }
+  .step-content strong {
+    font-family: 'Syne', sans-serif;
+    color: var(--text-bright);
+    font-size: 15px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ── REVEAL BLOCK ── */
+  .reveal {
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(127,255,107,0.05));
+    border: 1px solid rgba(0,212,255,0.3);
+    padding: 40px;
+    margin: 40px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reveal::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(0,212,255,0.04) 60deg, transparent 120deg);
+    animation: spin 10s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .reveal-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .flag-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .flag {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 800;
+    color: var(--accent3);
+    letter-spacing: 2px;
+    position: relative;
+    filter: blur(12px);
+    user-select: none;
+    transition: filter 0.6s ease, text-shadow 0.6s ease;
+  }
+
+  .flag.revealed {
+    filter: blur(0);
+    text-shadow: 0 0 30px rgba(127,255,107,0.4);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 20px rgba(127,255,107,0.3); }
+    to { text-shadow: 0 0 40px rgba(127,255,107,0.7), 0 0 80px rgba(127,255,107,0.2); }
+  }
+
+  .flag-mask {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .flag-mask.hidden { opacity: 0; }
+
+  .lock-icon {
+    font-size: 22px;
+    animation: shake 3s ease-in-out infinite;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    92% { transform: rotate(0deg); }
+    94% { transform: rotate(-8deg); }
+    96% { transform: rotate(8deg); }
+    98% { transform: rotate(-4deg); }
+  }
+
+  .mask-hint {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .reveal-block-unlocked .reveal-label::after {
+    content: ' · UNLOCKED';
+    color: var(--accent3);
+  }
+
+  /* Hover preview on desktop */
+  @media (hover: hover) {
+    .flag-wrapper:hover .flag {
+      filter: blur(4px);
+    }
+    .flag-wrapper:hover .mask-hint {
+      color: var(--accent);
+    }
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+  }
+
+  thead { background: var(--surface2); }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-size: 11px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface); }
+
+  /* ── QUOTE ── */
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding: 16px 24px;
+    margin: 28px 0;
+    background: rgba(255,215,0,0.04);
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  blockquote cite {
+    display: block;
+    margin-top: 10px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-style: normal;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0;
+    color: var(--border);
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .divider span {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* ── LESSONS ── */
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  .lesson-item {
+    background: var(--surface);
+    padding: 24px;
+  }
+
+  .lesson-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .lesson-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--text-bright);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .lesson-body {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  em {
+    color: var(--accent2);
+    font-style: normal;
+  }
+
+  strong { color: var(--text-bright); }
+
+  @media (max-width: 600px) {
+    .container { padding: 0 20px 60px; }
+    .hero { padding: 48px 0 40px; }
+    .hint-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="hero-tag">🔐 Crypto CTF · Writeup</div>
+    <h1>Papi Cris'<br><span>Fortune</span></h1>
+    <p class="hero-sub">// Cracking the empire's secret — one prime at a time</p>
+    <div class="hero-meta">
+      <div class="meta-item"><span class="dot"></span>Category: RSA / Number Theory</div>
+      <div class="meta-item"><span class="dot orange"></span>Difficulty: Medium</div>
+      <div class="meta-item"><span class="dot red"></span>Vuln: Small Prime Factor</div>
+    </div>
+  </header>
+
+  <!-- ── OPENING ── -->
+  <div class="section fade-in">
+    <p class="lead">
+      Đây không phải một bài RSA bình thường. Ẩn bên trong một câu chuyện gia đình đầy màu sắc là những manh mối dẫn thẳng tới một trong những điểm yếu kinh điển nhất của mã hóa hiện đại.
+    </p>
+
+    <p>Khi mở challenge, tôi thấy một cây gia phả dài — đầy những nhân vật kỳ lạ — và bên dưới là ba dòng số lạnh lùng. Phần lớn người chơi sẽ nhảy thẳng vào tính toán. Tôi thì không. Tôi đọc từng dòng một, như thám tử đọc nhật ký của kẻ tình nghi.</p>
+
+    <blockquote>
+      "Trong CTF, câu chuyện không bao giờ chỉ là câu chuyện. Đó là mật mã dưới dạng văn xuôi."
+      <cite>— nguyên tắc số 1 của mọi crypto player</cite>
+    </blockquote>
+  </div>
+
+  <div class="divider"><span>§ 01</span></div>
+
+  <!-- ── INITIAL DATA ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">STEP 01</span>
+      <h2>Nhận diện chiến trường</h2>
+    </div>
+
+    <p>Challenge trao cho tôi ba tham số RSA. Không thêm, không bớt:</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">RSA Parameters</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="var">n</span> = 625884537996922021301000341433932506927375585765524880339...
+<span class="var">e</span> = 0x10001   <span class="cm"># 65537 — public exponent tiêu chuẩn</span>
+<span class="var">c</span> = 623187221058644756330702672479741021304925868602233957500...</pre>
+    </div>
+
+    <p>Mục tiêu rõ ràng: tìm <code>m = cᵈ mod n</code>. Để tính <code>d</code> thì cần <code>φ(n) = (p−1)(q−1)</code>. Và để có φ(n) thì phải <strong>phân tích n thành p × q</strong>.</p>
+
+    <div class="callout info" data-label="KEY QUESTION">
+      <p>Làm sao phân tích một số 1024-bit+ mà không có supercomputer?<br>
+      <strong>Câu trả lời nằm trong câu chuyện.</strong></p>
+    </div>
+  </div>
+
+  <div class="divider"><span>§ 02</span></div>
+
+  <!-- ── CLUES ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">STEP 02</span>
+      <h2>Giải mã cây gia phả</h2>
+    </div>
+
+    <p>Mỗi nhân vật trong gia tộc Papi Cris không tồn tại để kể chuyện. Họ tồn tại để <em>tiết lộ điểm yếu của khóa</em>. Tôi đọc lại toàn bộ, gạch chân từng chi tiết có mùi toán học.</p>
+
+    <div class="hint-grid">
+      <div class="hint-card">
+        <div class="hint-name">👩‍🔬 Prima Sofia</div>
+        <div class="hint-quote">"Papi Cris dizia que até 100000 era perto e que basta descobrir um que o outro é óbvio"</div>
+        <div class="hint-meaning">Một số nguyên tố q &lt; 100.000 — thử chia ngay!</div>
+      </div>
+      <div class="hint-card">
+        <div class="hint-name">🎲 Primo Ricardo</div>
+        <div class="hint-quote">"Se pudesse escolher um número da sorte seria 777..."</div>
+        <div class="hint-meaning">p ≈ 2^777 — một số nguyên tố khổng lồ ~777 bit</div>
+      </div>
+      <div class="hint-card">
+        <div class="hint-name">🎮 Irmão Rafinha</div>
+        <div class="hint-quote">Fortnite_Pass = f1e2d3c4b5a69788796a5b4c3d2e1f0a9</div>
+        <div class="hint-meaning">Chuỗi hex 32 ký tự — có thể dùng sau khi decrypt RSA</div>
+      </div>
+      <div class="hint-card red">
+        <div class="hint-name">👵 Avó Bastarda</div>
+        <div class="hint-quote">"Roubou 2€ da carteira do papi Cris em 2009"</div>
+        <div class="hint-meaning">2 và 2009 — gần như là mồi nhử. Đừng bị cuốn vào.</div>
+      </div>
+    </div>
+
+    <p>Cái khoảnh khắc đọc tới Sofia — tôi dừng lại, đọc lại, rồi tim đập nhanh hơn một chút. Đây rồi.</p>
+
+    <div class="callout success" data-label="AHA MOMENT">
+      <p>Nếu <code>q &lt; 100.000</code> và <code>p ≈ 2^777</code>, thì <strong>n bị phá ngay bằng trial division</strong>. Không cần GNFS. Không cần Pollard. Chỉ cần một vòng lặp.</p>
+    </div>
+  </div>
+
+  <div class="divider"><span>§ 03</span></div>
+
+  <!-- ── ATTACK PLAN ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">STEP 03</span>
+      <h2>Kế hoạch tấn công</h2>
+    </div>
+
+    <p>Từ hai manh mối cốt lõi, cấu trúc của <code>n</code> lộ ra hoàn toàn:</p>
+
+    <div class="math-display">
+      <div class="math-line"><span class="var">n</span> = <span class="accent">p</span> × <span class="accent">q</span></div>
+      <div class="math-line" style="font-size:13px; color: var(--text-dim); margin-top:12px;">
+        với&nbsp;&nbsp;<span class="accent">p</span> ≈ 2<sup>777</sup>&nbsp;&nbsp;(~777 bit)&nbsp;&nbsp;·&nbsp;&nbsp;<span class="accent">q</span> &lt; 100.000
+      </div>
+    </div>
+
+    <p>RSA đặt toàn bộ sức mạnh vào việc <code>p</code> và <code>q</code> đều lớn và ngẫu nhiên. Khi một trong hai nhỏ tới mức có thể brute-force — mọi thứ sụp đổ trong tích tắc.</p>
+
+    <div class="steps">
+      <div class="step-item">
+        <div class="step-icon">01</div>
+        <div class="step-content">
+          <strong>Trial Division</strong>
+          Thử chia <code>n</code> cho toàn bộ số nguyên tố dưới 100.000. Nếu tìm được <code>q</code> thì <code>p = n / q</code> tức thì.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-icon">02</div>
+        <div class="step-content">
+          <strong>Tính φ(n)</strong>
+          Với p và q đã biết: <code>φ(n) = (p−1)(q−1)</code>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-icon">03</div>
+        <div class="step-content">
+          <strong>Tìm private key d</strong>
+          <code>d = e⁻¹ mod φ(n)</code> — nghịch đảo modular chuẩn.
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-icon">04</div>
+        <div class="step-content">
+          <strong>Giải mã</strong>
+          <code>m = cᵈ mod n</code>, rồi chuyển số thành bytes để lấy flag.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>§ 04</span></div>
+
+  <!-- ── CODE ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">STEP 04</span>
+      <h2>Thực thi — từng dòng lệnh</h2>
+    </div>
+
+    <p>Không cần tool phức tạp. Một script Python ngắn là đủ để phá vỡ toàn bộ hệ thống mã hóa này.</p>
+
+    <p><strong>Phân tích n:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Python · Factorization</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="kw">from</span> sympy <span class="kw">import</span> primerange
+
+<span class="var">n</span> = <span class="num">625884537996922021301000341433932506927375585765524880339...</span>
+<span class="var">e</span> = <span class="num">0x10001</span>
+<span class="var">c</span> = <span class="num">623187221058644756330702672479741021304925868602233957500...</span>
+
+<span class="cm"># Sofia said q &lt; 100000 — let's brute force it</span>
+<span class="kw">for</span> <span class="var">q</span> <span class="kw">in</span> <span class="fn">primerange</span>(<span class="num">2</span>, <span class="num">100_000</span>):
+    <span class="kw">if</span> <span class="var">n</span> % <span class="var">q</span> == <span class="num">0</span>:
+        <span class="var">p</span> = <span class="var">n</span> // <span class="var">q</span>
+        <span class="fn">print</span>(<span class="str">f"✓ Factor found: q = {q}"</span>)
+        <span class="fn">print</span>(<span class="str">f"  p = {p}"</span>)
+        <span class="kw">break</span></pre>
+    </div>
+
+    <p><strong>Recover private key và decrypt:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Python · Decrypt RSA</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="kw">from</span> Crypto.Util.number <span class="kw">import</span> inverse, long_to_bytes
+
+<span class="cm"># Compute Euler's totient</span>
+<span class="var">phi</span> = (<span class="var">p</span> - <span class="num">1</span>) * (<span class="var">q</span> - <span class="num">1</span>)
+
+<span class="cm"># Private exponent: d = e⁻¹ mod φ(n)</span>
+<span class="var">d</span> = <span class="fn">inverse</span>(<span class="var">e</span>, <span class="var">phi</span>)
+
+<span class="cm"># Decrypt: m = c^d mod n</span>
+<span class="var">m</span> = <span class="fn">pow</span>(<span class="var">c</span>, <span class="var">d</span>, <span class="var">n</span>)
+<span class="var">flag</span> = <span class="fn">long_to_bytes</span>(<span class="var">m</span>)
+
+<span class="fn">print</span>(<span class="str">f"Flag: {flag.decode()}"</span>)</pre>
+    </div>
+
+    <div class="callout" data-label="EXECUTION TIME">
+      <p>Toàn bộ quá trình — từ trial division đến có flag — mất <strong>chưa tới 1 giây</strong>.<br>
+      Một hệ thống mã hóa được xây dựng nhiều giờ, sụp đổ trong chớp mắt.</p>
+    </div>
+  </div>
+
+  <div class="divider"><span>§ 05</span></div>
+
+  <!-- ── FLAG ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">STEP 05</span>
+      <h2>Khoảnh khắc flag hiện ra</h2>
+    </div>
+
+    <p>Đây là phần tôi thích nhất trong mọi crypto challenge — cái giây terminal in ra plaintext. Không có animation, không có nhạc nền, chỉ là một dòng text. Nhưng cảm giác đó thì không thể diễn tả.</p>
+
+    <div class="reveal" id="revealBlock">
+      <div class="reveal-label">// DECRYPTED MESSAGE</div>
+      <div class="flag-wrapper">
+        <div class="flag" id="flagText">S3cr3t_to_p4pis_f0rtune</div>
+        <div class="flag-mask" id="flagMask">
+          <span class="lock-icon">🔒</span>
+          <span class="mask-hint">click để giải mã</span>
+        </div>
+      </div>
+    </div>
+
+    <p>Papi Cris giấu bí mật của mình sau một lớp RSA. Nhưng ông chọn số nguyên tố quá nhỏ — và trong thế giới mật mã, điều đó có giá phải trả.</p>
+  </div>
+
+  <div class="divider"><span>§ 06</span></div>
+
+  <!-- ── LESSONS ── -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <span class="step-num">TAKEAWAYS</span>
+      <h2>Những gì challenge này dạy tôi</h2>
+    </div>
+
+    <div class="lesson-grid">
+      <div class="lesson-item">
+        <div class="lesson-icon">🔑</div>
+        <div class="lesson-title">Small Prime = Broken RSA</div>
+        <div class="lesson-body">Nếu p hoặc q nhỏ hơn 100.000, trial division phá trong mili-giây. RSA an toàn khi cả hai số nguyên tố đều &gt; 1024 bit.</div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-icon">📖</div>
+        <div class="lesson-title">Đọc kỹ câu chuyện</div>
+        <div class="lesson-body">CTF author nhúng hint vào prose. Mỗi từ "số", "gần", "tìm" đều có thể là tọa độ. Đừng skip lore.</div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-icon">🎯</div>
+        <div class="lesson-title">Nhận diện red herring</div>
+        <div class="lesson-body">Avó Bastarda với 2 và 2009 là mồi nhử. Biết bỏ qua thứ không quan trọng cũng là một kỹ năng.</div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-icon">⚡</div>
+        <div class="lesson-title">Simplest Attack First</div>
+        <div class="lesson-body">Trước khi dùng Pollard ρ hay Fermat factorization — thử trial division. Đôi khi câu trả lời đơn giản đến ngạc nhiên.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 40px 0 28px"><span>bảng tóm tắt</span></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nhân vật</th>
+            <th>Hint ẩn</th>
+            <th>Ý nghĩa trong RSA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Prima Sofia</td>
+            <td>até 100000 era perto</td>
+            <td style="color:var(--accent3)">q &lt; 100.000 → trial division</td>
+          </tr>
+          <tr>
+            <td>Primo Ricardo</td>
+            <td>lucky number 777</td>
+            <td style="color:var(--accent3)">p ≈ 2^777 → số nguyên tố lớn</td>
+          </tr>
+          <tr>
+            <td>Irmão Rafinha</td>
+            <td>Fortnite_Pass hex</td>
+            <td style="color:var(--text-dim)">Có thể dùng sau RSA decrypt</td>
+          </tr>
+          <tr>
+            <td>Avó Bastarda</td>
+            <td>2€ / 2009</td>
+            <td style="color:var(--red)">Red herring — bỏ qua</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"><span>§ fin</span></div>
+
+  <!-- ── CLOSING ── -->
+  <div class="section fade-in">
+    <p class="lead">
+      Papi Cris có thể là huyền thoại trên sân bóng. Nhưng trong thế giới mật mã — một số nguyên tố nhỏ là tất cả những gì kẻ tấn công cần.
+    </p>
+
+    <p>Challenge này không đòi hỏi kỹ thuật phức tạp. Nó đòi hỏi <em>sự chú ý</em> — đọc cẩn thận, liên kết manh mối, và hiểu rằng security by obscurity không phải security thật sự.</p>
+
+    <p>Lần sau khi thấy một câu chuyện trong crypto challenge, hãy nhớ: mỗi nhân vật đều có một bí mật. Bí mật đó viết bằng ngôn ngữ của toán học.</p>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <span>🔐 CTF Writeup — Crypto Category</span>
+    <span>RSA · Small Prime Factor Attack</span>
+  </footer>
+
+</div>
+
+<script>
+  // Intersection Observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) el.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Flag reveal on click
+  const flagWrapper = document.querySelector('.flag-wrapper');
+  const flagText = document.getElementById('flagText');
+  const flagMask = document.getElementById('flagMask');
+  const revealLabel = document.querySelector('.reveal-label');
+
+  let revealed = false;
+
+  if (flagWrapper) {
+    flagWrapper.addEventListener('click', () => {
+      if (revealed) return;
+      revealed = true;
+
+      // Hide mask
+      flagMask.classList.add('hidden');
+
+      // Reveal with typing effect
+      const fullText = flagText.textContent.trim();
+      flagText.textContent = '';
+      flagText.classList.add('revealed');
+
+      let i = 0;
+      const type = () => {
+        if (i < fullText.length) {
+          flagText.textContent += fullText[i++];
+          setTimeout(type, 55);
+        }
+      };
+      type();
+
+      // Update label
+      revealLabel.classList.add('unlocked');
+      revealLabel.textContent = '// DECRYPTED MESSAGE · UNLOCKED ✓';
+      revealLabel.style.color = 'var(--accent3)';
+    });
+  }
+</script>
+
+</body>
+</html>

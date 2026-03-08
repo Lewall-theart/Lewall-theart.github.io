@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CTF writeups, crypto breakdowns, and hacking notes.">
+<title>0xBlog — CTF Writeups</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<style>
+
+/* ── HERO ── */
+.hero {
+  padding: 160px 0 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* radial glow */
+.hero__bg::before {
+  content: '';
+  position: absolute;
+  top: 20%; left: 50%;
+  transform: translateX(-50%);
+  width: 700px; height: 400px;
+  background: radial-gradient(ellipse at center, rgba(0,212,255,0.06) 0%, transparent 70%);
+}
+
+/* animated corner brackets */
+.hero__bracket {
+  position: absolute;
+  width: 80px; height: 80px;
+  opacity: 0.15;
+}
+.hero__bracket--tl { top: 80px; left: 40px; border-top: 1px solid var(--accent); border-left: 1px solid var(--accent); }
+.hero__bracket--br { bottom: 40px; right: 40px; border-bottom: 1px solid var(--accent); border-right: 1px solid var(--accent); }
+
+.hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.hero__pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent3);
+  box-shadow: 0 0 0 0 rgba(127,255,107,0.4);
+  animation: heartbeat 2s infinite;
+}
+@keyframes heartbeat {
+  0%   { box-shadow: 0 0 0 0 rgba(127,255,107,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(127,255,107,0); }
+  100% { box-shadow: 0 0 0 0 rgba(127,255,107,0); }
+}
+
+.hero__eyebrow-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent3);
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 9vw, 100px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -4px;
+  color: var(--text-bright);
+  margin-bottom: 28px;
+}
+
+.hero__title .line2 { color: var(--accent); }
+.hero__title .line3 { color: var(--text-mute); font-weight: 400; font-size: 0.6em; letter-spacing: -2px; }
+
+.hero__desc {
+  max-width: 500px;
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 40px;
+}
+
+.hero__cta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 28px;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn:hover::before { opacity: 0.06; }
+
+.btn--primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn--primary:hover { box-shadow: var(--glow-cyan); }
+
+.btn--ghost {
+  border-color: var(--border2);
+  color: var(--text-dim);
+}
+.btn--ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* ── STATS BAR ── */
+.stats {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  margin-bottom: 80px;
+}
+
+.stat {
+  flex: 1;
+  padding: 24px 28px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.stat:last-child { border-right: none; }
+
+.stat__num {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+.stat__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+@media (max-width: 600px) {
+  .stats { flex-wrap: wrap; }
+  .stat { flex: 1 1 50%; border-bottom: 1px solid var(--border); }
+  .stat:nth-last-child(-n+2) { border-bottom: none; }
+}
+
+/* ── FEATURED ── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.section-label__line {
+  flex: 1; height: 1px; background: var(--border);
+}
+.section-label__text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  white-space: nowrap;
+}
+
+/* ── FEATURED CARD (big) ── */
+.featured-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 80px;
+}
+
+.card-featured {
+  background: var(--surface);
+  padding: 40px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 40px;
+  align-items: center;
+  transition: background var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.card-featured::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+}
+.card-featured:hover { background: var(--surface2); }
+
+.card-featured__badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card-featured__title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.card-featured__title:hover { color: var(--accent); }
+
+.card-featured__desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.card-featured__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.card-featured__visual {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  position: relative;
+}
+
+.card-featured__visual::before {
+  content: 'terminal';
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-mute);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.cv-line { padding: 2px 0; }
+.cv-prompt { color: var(--accent); }
+.cv-cmd { color: var(--text-dim); }
+.cv-out { color: var(--accent3); }
+.cv-err { color: var(--accent2); }
+.cv-cursor { display: inline-block; width: 7px; height: 12px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── CARD SMALL ── */
+.card-small {
+  background: var(--surface);
+  padding: 28px 32px;
+  transition: background var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+.card-small:hover { background: var(--surface2); }
+.card-small::after {
+  content: '→';
+  position: absolute;
+  right: 24px; bottom: 24px;
+  font-family: var(--font-mono);
+  color: var(--text-mute);
+  transition: color var(--transition), transform var(--transition);
+}
+.card-small:hover::after { color: var(--accent); transform: translateX(4px); }
+
+.card-small__cat {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+}
+.card-small__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-bright);
+  line-height: 1.2;
+  transition: color var(--transition);
+}
+.card-small:hover .card-small__title { color: var(--accent); }
+
+.card-small__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-small__date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mute);
+  margin-top: auto;
+}
+
+/* ── RECENT LIST ── */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  margin-bottom: 80px;
+}
+
+.recent-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+  position: relative;
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-item:hover { background: var(--surface); }
+
+.recent-item__num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  text-align: right;
+}
+.recent-item__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-bright);
+  transition: color var(--transition);
+}
+.recent-item:hover .recent-item__title { color: var(--accent); }
+.recent-item__sub {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-top: 2px;
+  display: flex;
+  gap: 10px;
+}
+.recent-item__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── CATEGORIES ── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+
+.cat-card {
+  background: var(--surface);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background var(--transition);
+  cursor: pointer;
+}
+.cat-card:hover { background: var(--surface2); }
+
+.cat-card__icon { font-size: 24px; }
+.cat-card__name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+.cat-card__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+}
+.cat-card__bar {
+  height: 2px;
+  background: var(--border2);
+  margin-top: 8px;
+  overflow: hidden;
+}
+.cat-card__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 1s ease;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  .card-featured { grid-template-columns: 1fr; }
+  .card-featured__visual { display: none; }
+  .featured-grid { grid-template-columns: 1fr; }
+  .recent-item { grid-template-columns: 40px 1fr; }
+  .recent-item__right { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── SEARCH MODAL ── -->
+<div id="searchModal" class="search-modal">
+  <div class="search-modal__box">
+    <div class="search-modal__header">
+      <span class="search-modal__icon">⌕</span>
+      <input id="searchInput" type="text" placeholder="Tìm writeup, category, tag..." autocomplete="off" spellcheck="false">
+      <button id="searchClose" class="search-modal__close">ESC</button>
+    </div>
+    <div id="searchResults" class="search-modal__results"></div>
+    <div class="search-modal__hint">
+      <span><kbd>↑</kbd><kbd>↓</kbd> điều hướng</span>
+      <span><kbd>↵</kbd> mở</span>
+      <span><kbd>esc</kbd> đóng</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <div class="container navbar__inner">
+    <a href="index.html" class="navbar__logo">
+      <div class="navbar__logo-icon">0x</div>
+      Blog
+    </a>
+    <ul class="navbar__nav">
+      <li><a href="index.html" class="navbar__link">Home</a></li>
+      <li><a href="writeups.html" class="navbar__link">Writeups</a></li>
+      <li><a href="categories.html" class="navbar__link">Categories</a></li>
+      <li><a href="about.html" class="navbar__link">About</a></li>
+    </ul>
+    <div class="navbar__right">
+      <button class="navbar__search">
+        <span>⌕ Search</span>
+        <kbd>Ctrl K</kbd>
+      </button>
+      <div class="navbar__hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="navbar__mobile">
+  <a href="index.html" class="navbar__link">Home</a>
+  <a href="writeups.html" class="navbar__link">Writeups</a>
+  <a href="categories.html" class="navbar__link">Categories</a>
+  <a href="about.html" class="navbar__link">About</a>
+</div>
+
+<!-- ── MAIN ── -->
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__bg">
+      <div class="hero__bracket hero__bracket--tl"></div>
+      <div class="hero__bracket hero__bracket--br"></div>
+    </div>
+    <div class="container">
+      <div class="hero__eyebrow">
+        <div class="hero__pulse"></div>
+        <span class="hero__eyebrow-text">CTF Writeups &amp; Notes</span>
+      </div>
+      <h1 class="hero__title fade-up">
+        <span class="line1">BREAK.</span><br>
+        <span class="line2">ANALYZE.</span><br>
+        <span class="line3">Document.</span>
+      </h1>
+      <p class="hero__desc fade-up" data-delay="100">
+        Tài liệu hóa hành trình giải các thử thách CTF — từ RSA bị gãy, SQL injection lách luật, đến reverse engineering không có mercy.
+      </p>
+      <div class="hero__cta fade-up" data-delay="200">
+        <a href="writeups.html" class="btn btn--primary">
+          <span>⬡</span> Xem Writeups
+        </a>
+        <a href="about.html" class="btn btn--ghost">
+          <span>◎</span> About
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="container">
+    <div class="stats fade-up">
+      <div class="stat">
+        <div class="stat__num" data-count="42">0</div>
+        <div class="stat__label">Writeups</div>
+      </div>
+      <div class="stat">
+        <div class="stat__num" data-count="6">0</div>
+        <div class="stat__label">Categories</div>
+      </div>
+      <div class="stat">
+        <div class="stat__num" data-count="18">0</div>
+        <div class="stat__label">CTF Events</div>
+      </div>
+      <div class="stat">
+        <div class="stat__num" data-count="7">0</div>
+        <div class="stat__label">1st Bloods</div>
+      </div>
+    </div>
+
+    <!-- FEATURED -->
+    <div class="section-label fade-up">
+      <span class="section-label__text">// featured writeup</span>
+      <div class="section-label__line"></div>
+    </div>
+
+    <div class="featured-grid fade-up">
+      <!-- Big featured card -->
+      <a href="writeups/papi-cris.html" class="card-featured">
+        <div>
+          <div class="card-featured__badge">
+            <span class="tag tag--cyan">Crypto</span>
+            <span class="tag tag--orange">RSA</span>
+            <span class="tag tag--green">FEATURED</span>
+          </div>
+          <div class="card-featured__title">Papi Cris' Fortune</div>
+          <p class="card-featured__desc">
+            Một bài RSA ẩn điểm yếu bên trong câu chuyện gia đình. Manh mối nằm trong lời thoại nhân vật, không phải trong code. Trial division phá vỡ toàn bộ trong chưa tới một giây.
+          </p>
+          <div class="card-featured__meta">
+            <div class="diff diff--medium"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+            <span>Medium</span>
+            <span>·</span>
+            <span>CTF 2024</span>
+            <span>·</span>
+            <span>8 min read</span>
+          </div>
+        </div>
+        <div class="card-featured__visual">
+          <div class="cv-line"><span class="cv-prompt">$</span> <span class="cv-cmd">python3 solve.py</span></div>
+          <div class="cv-line cv-out">[*] Trying primes up to 100000...</div>
+          <div class="cv-line cv-out">[+] Factor found: q = 65537</div>
+          <div class="cv-line cv-out">[+] p = 2^777 + delta</div>
+          <div class="cv-line"><span class="cv-prompt">$</span> <span class="cv-cmd">decrypt --rsa</span></div>
+          <div class="cv-line cv-out">[+] Flag: <span style="color:var(--accent3)">S3cr3t_to_p4pis_f0rtune</span></div>
+          <div class="cv-line"><span class="cv-prompt">$</span> <span class="cv-cursor"></span></div>
+        </div>
+      </a>
+
+      <!-- Two small cards -->
+      <a href="writeups/baby-rsa.html" class="card-small">
+        <div class="card-small__cat">Crypto</div>
+        <div class="card-small__title">Baby RSA — When e=3 Bites Back</div>
+        <div class="card-small__tags">
+          <span class="tag tag--cyan">RSA</span>
+          <span class="tag tag--orange">Low Exponent</span>
+        </div>
+        <div class="card-small__date">Mar 2024 · 5 min</div>
+      </a>
+      <a href="writeups/forbidden-injection.html" class="card-small">
+        <div class="card-small__cat">Web</div>
+        <div class="card-small__title">Forbidden Injection</div>
+        <div class="card-small__tags">
+          <span class="tag tag--red">SQLi</span>
+          <span class="tag tag--orange">WAF Bypass</span>
+        </div>
+        <div class="card-small__date">Feb 2024 · 12 min</div>
+      </a>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="section-label fade-up">
+      <span class="section-label__text">// categories</span>
+      <div class="section-label__line"></div>
+    </div>
+
+    <div class="cat-grid fade-up" data-stagger>
+      <a href="categories.html#crypto" class="cat-card fade-up">
+        <div class="cat-card__icon">🔐</div>
+        <div class="cat-card__name">Crypto</div>
+        <div class="cat-card__count">14 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="85%"></div></div>
+      </a>
+      <a href="categories.html#web" class="cat-card fade-up">
+        <div class="cat-card__icon">🌐</div>
+        <div class="cat-card__name">Web</div>
+        <div class="cat-card__count">11 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="65%"></div></div>
+      </a>
+      <a href="categories.html#pwn" class="cat-card fade-up">
+        <div class="cat-card__icon">💥</div>
+        <div class="cat-card__name">Pwn</div>
+        <div class="cat-card__count">8 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="48%"></div></div>
+      </a>
+      <a href="categories.html#rev" class="cat-card fade-up">
+        <div class="cat-card__icon">🔍</div>
+        <div class="cat-card__name">Reverse</div>
+        <div class="cat-card__count">6 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="36%"></div></div>
+      </a>
+      <a href="categories.html#misc" class="cat-card fade-up">
+        <div class="cat-card__icon">🎲</div>
+        <div class="cat-card__name">Misc</div>
+        <div class="cat-card__count">3 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="18%"></div></div>
+      </a>
+      <a href="categories.html#forensics" class="cat-card fade-up">
+        <div class="cat-card__icon">🧬</div>
+        <div class="cat-card__name">Forensics</div>
+        <div class="cat-card__count">2 writeups</div>
+        <div class="cat-card__bar"><div class="cat-card__fill" style="width:0%" data-w="12%"></div></div>
+      </a>
+    </div>
+
+    <!-- RECENT -->
+    <div class="section-label fade-up">
+      <span class="section-label__text">// recent writeups</span>
+      <div class="section-label__line"></div>
+      <a href="writeups.html" class="btn btn--ghost" style="padding: 6px 16px; font-size:10px;">View All →</a>
+    </div>
+
+    <div class="recent-list fade-up">
+      <a href="writeups/papi-cris.html" class="recent-item">
+        <div class="recent-item__num">01</div>
+        <div>
+          <div class="recent-item__title">Papi Cris' Fortune</div>
+          <div class="recent-item__sub"><span class="tag tag--cyan" style="font-size:9px">Crypto</span><span>Small prime RSA</span></div>
+        </div>
+        <div class="recent-item__right">
+          <div class="diff diff--medium"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">Mar 2024</span>
+        </div>
+      </a>
+      <a href="writeups/forbidden-injection.html" class="recent-item">
+        <div class="recent-item__num">02</div>
+        <div>
+          <div class="recent-item__title">Forbidden Injection</div>
+          <div class="recent-item__sub"><span class="tag tag--red" style="font-size:9px">Web</span><span>WAF bypass SQLi</span></div>
+        </div>
+        <div class="recent-item__right">
+          <div class="diff diff--hard"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">Feb 2024</span>
+        </div>
+      </a>
+      <a href="writeups/blind-vision.html" class="recent-item">
+        <div class="recent-item__num">03</div>
+        <div>
+          <div class="recent-item__title">Blind Vision</div>
+          <div class="recent-item__sub"><span class="tag tag--purple" style="font-size:9px">Reverse</span><span>Anti-debug, IDA Pro</span></div>
+        </div>
+        <div class="recent-item__right">
+          <div class="diff diff--hard"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">Jan 2024</span>
+        </div>
+      </a>
+      <a href="writeups/stack-overflow.html" class="recent-item">
+        <div class="recent-item__num">04</div>
+        <div>
+          <div class="recent-item__title">Stack Overflow 101</div>
+          <div class="recent-item__sub"><span class="tag tag--orange" style="font-size:9px">Pwn</span><span>Buffer overflow, ROP chain</span></div>
+        </div>
+        <div class="recent-item__right">
+          <div class="diff diff--medium"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">Jan 2024</span>
+        </div>
+      </a>
+      <a href="writeups/baby-rsa.html" class="recent-item">
+        <div class="recent-item__num">05</div>
+        <div>
+          <div class="recent-item__title">Baby RSA</div>
+          <div class="recent-item__sub"><span class="tag tag--cyan" style="font-size:9px">Crypto</span><span>Low public exponent</span></div>
+        </div>
+        <div class="recent-item__right">
+          <div class="diff diff--easy"><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">Dec 2023</span>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand-name">0xBlog</div>
+        <p class="footer__brand-desc">Ghi lại hành trình phá mã, khai thác lỗ hổng, và học hỏi qua từng thử thách CTF.</p>
+      </div>
+      <div>
+        <div class="footer__col-title">Navigation</div>
+        <ul class="footer__links">
+          <li><a href="index.html" class="footer__link">Home</a></li>
+          <li><a href="writeups.html" class="footer__link">Writeups</a></li>
+          <li><a href="categories.html" class="footer__link">Categories</a></li>
+          <li><a href="about.html" class="footer__link">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__col-title">Categories</div>
+        <ul class="footer__links">
+          <li><a href="categories.html#crypto" class="footer__link">Crypto</a></li>
+          <li><a href="categories.html#web" class="footer__link">Web</a></li>
+          <li><a href="categories.html#pwn" class="footer__link">Pwn</a></li>
+          <li><a href="categories.html#rev" class="footer__link">Reverse</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span class="footer__copy">© 2024 0xBlog · Built with raw HTML/CSS · Hosted on GitHub Pages</span>
+      <div class="footer__socials">
+        <a href="#" class="footer__social" title="GitHub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <a href="#" class="footer__social" title="Twitter">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+// Count-up animation
+const countEls = document.querySelectorAll('[data-count]');
+const countObserver = new IntersectionObserver(entries => {
+  entries.forEach(el => {
+    if (!el.isIntersecting) return;
+    const target = +el.target.dataset.count;
+    let cur = 0;
+    const step = target / 40;
+    const timer = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.target.textContent = Math.floor(cur);
+      if (cur >= target) clearInterval(timer);
+    }, 30);
+    countObserver.unobserve(el.target);
+  });
+});
+countEls.forEach(el => countObserver.observe(el));
+
+// Category bar animation
+const barObserver = new IntersectionObserver(entries => {
+  entries.forEach(el => {
+    if (!el.isIntersecting) return;
+    el.target.querySelectorAll('.cat-card__fill').forEach(fill => {
+      setTimeout(() => fill.style.width = fill.dataset.w, 200);
+    });
+  });
+});
+document.querySelector('.cat-grid') && barObserver.observe(document.querySelector('.cat-grid'));
+</script>
+
+<!-- Search Modal Styles (global, could be in base.css) -->
+<style>
+.search-modal {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  align-items: flex-start; justify-content: center; padding-top: 100px;
+}
+.search-modal.open { display: flex; }
+.search-modal__box {
+  width: 100%; max-width: 580px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } }
+.search-modal__header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.search-modal__icon { font-size: 18px; color: var(--text-dim); }
+.search-modal__header input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: var(--font-body); font-size: 15px; color: var(--text-bright);
+}
+.search-modal__header input::placeholder { color: var(--text-mute); }
+.search-modal__close {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+  color: var(--text-mute); border: 1px solid var(--border2); padding: 3px 8px;
+  transition: all var(--transition);
+}
+.search-modal__close:hover { color: var(--text); border-color: var(--text-dim); }
+.search-modal__results { max-height: 320px; overflow-y: auto; }
+.search-result {
+  display: block; padding: 14px 20px;
+  border-bottom: 1px solid var(--border); transition: background var(--transition);
+}
+.search-result:hover { background: var(--surface2); }
+.search-result:last-child { border-bottom: none; }
+.search-result__title { font-family: var(--font-display); font-weight: 700; color: var(--text-bright); margin-bottom: 6px; }
+.search-result__title mark { background: rgba(0,212,255,0.2); color: var(--accent); }
+.search-result__meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.search-empty { padding: 24px 20px; color: var(--text-mute); font-size: 13px; }
+.search-modal__hint {
+  padding: 10px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 20px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-mute);
+}
+.search-modal__hint kbd {
+  background: var(--surface2); border: 1px solid var(--border2);
+  padding: 1px 5px; border-radius: 2px; color: var(--text-dim);
+}
+</style>
+</body>
+</html>
