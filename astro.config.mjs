@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config'
 import vue from '@astrojs/vue'
-import mdx from '@astrojs/mdx'
 import UnoCSS from '@unocss/astro'
 
 export default defineConfig({
@@ -8,7 +7,6 @@ export default defineConfig({
   base: '/',
   integrations: [
     vue({ appEntrypoint: '/src/vue-app' }),
-    mdx(),
     UnoCSS({ injectReset: true }),
   ],
   markdown: {

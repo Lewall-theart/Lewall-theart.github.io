@@ -1,14 +1,14 @@
 ---
 import Base from '../layouts/Base.astro'
-import { getCollection } from 'astro:content'
+import { publishedWriteups } from '../data/writeups'
 import HeroTerminal from '../components/HeroTerminal.vue'
 import CountUp from '../components/CountUp.vue'
 import CategoryBars from '../components/CategoryBars.vue'
 import NowPlaying from '../components/NowPlaying.vue'
-const all = await getCollection('writeups', ({data})=>!data.draft)
-const recent = [...all].sort((a,b)=>new Date(b.data.date).getTime()-new Date(a.data.date).getTime()).slice(0,5)
-const featured = all.find(w=>w.data.featured) ?? recent[0]
-const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
+const all = publishedWriteups
+const recent = [...all].sort((a,b)=>b.date.getTime()-a.date.getTime()).slice(0,5)
+const featured = all.find(w=>w.featured) ?? recent[0]
+const allTags = [...new Set(all.flatMap(w=>w.tags))].slice(0,12)
 ---
 <Base title="Home">
   <!-- HERO -->
@@ -57,20 +57,20 @@ const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
         <div class="featured-top"></div>
         <a href={`/writeups/${featured.slug}`} class="featured-content">
           <div class="featured-tags">
-            <span class={`tag tag-${featured.data.catColor??'cyan'}`}>{featured.data.category}</span>
-            {featured.data.tags.slice(0,2).map((t:string)=><span class="tag tag-orange">{t}</span>)}
-            {featured.data.featured && <span class="tag tag-green">FEATURED</span>}
+            <span class={`tag tag-${featured.catColor??'cyan'}`}>{featured.category}</span>
+            {featured.tags.slice(0,2).map((t:string)=><span class="tag tag-orange">{t}</span>)}
+            {featured.featured && <span class="tag tag-green">FEATURED</span>}
           </div>
-          <h2 class="featured-title">{featured.data.title}</h2>
-          <p class="featured-desc">{featured.data.description}</p>
+          <h2 class="featured-title">{featured.title}</h2>
+          <p class="featured-desc">{featured.description}</p>
           <div class="featured-meta">
-            <div class={`diff diff-${featured.data.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
-            <span class="capitalize">{featured.data.difficulty}</span>
-            <span>·</span><span>{featured.data.event??'CTF 2024'}</span>
-            <span>·</span><span>{featured.data.readTime??8} min read</span>
+            <div class={`diff diff-${featured.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+            <span class="capitalize">{featured.difficulty}</span>
+            <span>·</span><span>{featured.event??'CTF 2024'}</span>
+            <span>·</span><span>{featured.readTime??8} min read</span>
           </div>
         </a>
-        <HeroTerminal client:visible slug={featured.slug} flag={featured.data.flag} />
+        <HeroTerminal client:visible slug={featured.slug} flag={featured.flag} />
       </div>
     )}
 
@@ -84,7 +84,7 @@ const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
 
     <!-- CATEGORIES -->
     <div class="section-label mt-16"><span class="sl-text">// categories</span><div class="sl-line"></div></div>
-    <CategoryBars client:visible writeups={all.map(w=>({category:w.data.category}))} />
+    <CategoryBars client:visible writeups={all.map(w=>({category:w.category}))} />
 
     <!-- RECENT -->
     <div class="section-label mt-16 mb-6"><span class="sl-text">// recent writeups</span><div class="sl-line"></div><a href="/writeups" class="btn-ghost btn-sm">View All →</a></div>
@@ -93,15 +93,15 @@ const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
         <a href={`/writeups/${w.slug}`} class="recent-item">
           <span class="recent-num">{String(i+1).padStart(2,'0')}</span>
           <div class="recent-body">
-            <div class="recent-title">{w.data.title}</div>
+            <div class="recent-title">{w.title}</div>
             <div class="recent-meta">
-              <span class={`tag tag-${w.data.catColor??'cyan'}`} style="font-size:9px">{w.data.category}</span>
-              <span class="recent-excerpt">{w.data.description?.slice(0,55)}...</span>
+              <span class={`tag tag-${w.catColor??'cyan'}`} style="font-size:9px">{w.category}</span>
+              <span class="recent-excerpt">{w.description?.slice(0,55)}...</span>
             </div>
           </div>
           <div class="recent-right">
-            <div class={`diff diff-${w.data.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
-            <span class="recent-date">{new Date(w.data.date).toLocaleDateString('vi-VN',{month:'short',year:'numeric'})}</span>
+            <div class={`diff diff-${w.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+            <span class="recent-date">{w.date.toLocaleDateString('vi-VN',{month:'short',year:'numeric'})}</span>
           </div>
         </a>
       ))}
@@ -110,7 +110,7 @@ const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
 </Base>
 
 <style>
-.container{max-width:1100px;margin:0 auto;padding:0 40px;}
+.container{max-width:var(--page-max);margin:0 auto;padding:0 var(--page-pad);}
 /* Hero */
 .hero{position:relative;padding:160px 0 100px;overflow:hidden;}
 .hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse at center,rgba(0,212,255,.06) 0%,transparent 70%);pointer-events:none;}
@@ -178,5 +178,5 @@ const allTags = [...new Set(all.flatMap(w=>w.data.tags))].slice(0,12)
 .recent-excerpt{font-size:12px;color:var(--mute);}
 .recent-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
 .recent-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);}
-@media(max-width:600px){.recent-right{display:none;}.container{padding:0 20px;}}
+@media(max-width:600px){.recent-right{display:none;}.container{padding:0 var(--page-pad-sm);}}
 </style>

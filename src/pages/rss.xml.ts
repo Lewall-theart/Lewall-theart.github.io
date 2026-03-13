@@ -1,21 +1,20 @@
 import rss from '@astrojs/rss'
-import { getCollection } from 'astro:content'
+import { publishedWriteups } from '../data/writeups'
 import type { APIContext } from 'astro'
 
 export async function GET(context: APIContext) {
-  const writeups = await getCollection('writeups', ({data}) => !data.draft)
-  const sorted = writeups.sort((a,b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  const sorted = [...publishedWriteups].sort((a,b) => b.date.getTime() - a.date.getTime())
 
   return rss({
     title: '0xBlog — CTF Writeups',
     description: 'CTF writeups, crypto breakdowns, and hacking notes.',
     site: context.site?.toString() ?? 'https://lewall-theart.github.io',
     items: sorted.map(w => ({
-      title: w.data.title,
-      description: w.data.description,
-      pubDate: w.data.date,
+      title: w.title,
+      description: w.description,
+      pubDate: w.date,
       link: `/writeups/${w.slug}/`,
-      categories: [w.data.category, ...w.data.tags],
+      categories: [w.category, ...w.tags],
     })),
     customData: '<language>vi</language>',
   })

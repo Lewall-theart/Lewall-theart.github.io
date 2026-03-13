@@ -1,8 +1,10 @@
 ---
 import '../styles/global.css'
+import { ViewTransitions } from 'astro:transitions'
 import SearchModal from '../components/SearchModal.vue'
 import Navbar from '../components/Navbar.vue'
 import ParticleBackground from '../components/ParticleBackground.vue'
+import AzkiPlayer from '../components/AzkiPlayer.vue'
 interface Props { title:string; description?:string; showProgress?:boolean }
 const { title, description='CTF writeups, crypto breakdowns, and hacking notes.', showProgress=false } = Astro.props
 const currentPath = Astro.url.pathname
@@ -14,6 +16,7 @@ const currentPath = Astro.url.pathname
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta name="description" content={description}/>
   <title>{title} — 0xBlog</title>
+  <ViewTransitions />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
   <link rel="alternate" type="application/rss+xml" title="0xBlog RSS" href="/rss.xml"/>
   <meta property="og:title" content={`${title} — 0xBlog`}/>
@@ -26,6 +29,9 @@ const currentPath = Astro.url.pathname
   <ParticleBackground client:load />
   <SearchModal client:load />
   <Navbar client:load currentPath={currentPath} />
+  <div data-astro-transition-persist="azki-player">
+    <AzkiPlayer client:load />
+  </div>
   <main class="relative z-1">
     <slot />
   </main>
@@ -66,22 +72,39 @@ const currentPath = Astro.url.pathname
 </body>
 </html>
 <script>
-// Cursor
-const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring')
+let dot=null,ring=null
 let mx=-100,my=-100,rx=-100,ry=-100
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;if(dot){dot.style.left=mx+'px';dot.style.top=my+'px'}})
-;(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;if(ring){ring.style.left=rx+'px';ring.style.top=ry+'px'}requestAnimationFrame(tick)})()
-document.querySelectorAll('a,button,[role="button"]').forEach(el=>{
-  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'))
-  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'))
-})
-// Read progress
-const bar=document.getElementById('read-progress')
-if(bar)window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(window.scrollY/h*100)+'%'},{passive:true})
+function bindCursorEls(){
+  dot=document.getElementById('cursor-dot')
+  ring=document.getElementById('cursor-ring')
+}
+function initCursor(){
+  if(window.__cursorInit) return
+  window.__cursorInit=true
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;if(dot){dot.style.left=mx+'px';dot.style.top=my+'px'}})
+  ;(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;if(ring){ring.style.left=rx+'px';ring.style.top=ry+'px'}requestAnimationFrame(tick)})()
+  document.addEventListener('mouseover',e=>{const t=e.target; if(t&&t.closest&&t.closest('a,button,[role="button"]'))document.body.classList.add('cursor-hover')})
+  document.addEventListener('mouseout',e=>{const t=e.target; if(t&&t.closest&&t.closest('a,button,[role="button"]'))document.body.classList.remove('cursor-hover')})
+}
+let readBar=null
+function bindReadProgress(){readBar=document.getElementById('read-progress')}
+function onScroll(){
+  if(!readBar) return
+  const h=document.documentElement.scrollHeight-window.innerHeight
+  readBar.style.width=(window.scrollY/h*100)+'%'
+}
+if(!window.__progressInit){
+  window.__progressInit=true
+  window.addEventListener('scroll',onScroll,{passive:true})
+}
+initCursor()
+bindCursorEls()
+bindReadProgress()
+document.addEventListener('astro:page-load',()=>{bindCursorEls();bindReadProgress()})
 </script>
 <style>
 .ft{margin-top:120px;border-top:1px solid var(--border);padding:60px 0 40px;}
-.ft-inner{max-width:1100px;margin:0 auto;padding:0 40px;}
+.ft-inner{max-width:var(--page-max);margin:0 auto;padding:0 var(--page-pad);}
 .ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:60px;margin-bottom:48px;}
 .ft-brand{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--bright);margin-bottom:12px;letter-spacing:-.5px;}
 .ft-icon{width:32px;height:32px;border:1px solid var(--azki-violet);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:12px;color:var(--azki-violet);background:rgba(155,109,255,.06);}
@@ -96,6 +119,6 @@ if(bar)window.addEventListener('scroll',()=>{const h=document.documentElement.sc
 .ft-socials{display:flex;gap:8px;}
 .ft-soc{width:32px;height:32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);transition:all .2s;font-size:14px;}
 .ft-soc:hover{border-color:var(--azki-pink);color:var(--azki-pink);background:rgba(255,110,180,.06);}
-@media(max-width:768px){.ft-inner{padding:0 20px;}.ft-grid{grid-template-columns:1fr 1fr;gap:40px;}.ft-grid>:first-child{grid-column:1/-1;}}
+@media(max-width:768px){.ft-inner{padding:0 var(--page-pad-sm);}.ft-grid{grid-template-columns:1fr 1fr;gap:40px;}.ft-grid>:first-child{grid-column:1/-1;}}
 @media(max-width:480px){.ft-grid{grid-template-columns:1fr;}}
 </style>

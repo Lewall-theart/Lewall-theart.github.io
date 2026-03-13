@@ -7,16 +7,42 @@
   --cyan:#00d4ff;--orange:#ff6b35;--green:#7fff6b;
   --gold:#ffd700;--red:#ff4757;--purple:#bd93f9;
   --azki-pink:#ff6eb4;--azki-violet:#9b6dff;--azki-lilac:#c9a6ff;
-  --text:#c9d1d9;--dim:#6e7681;--mute:#3d4a56;--bright:#e6edf3;
+  --text:#d7dde6;--dim:#a2acb9;--mute:#7c8796;--bright:#f3f6fa;
+  --page-max:1280px;--page-narrow:860px;--page-pad:40px;--page-pad-sm:20px;
   --nav-h:60px;
 }
 [data-theme="light"]{
   --bg:#f0f4f8;--surface:#ffffff;--s2:#e8edf3;--s3:#dde3ec;
   --border:#c8d3e0;--b2:#b0bec9;
-  --text:#2d3748;--dim:#718096;--mute:#a0aec0;--bright:#1a202c;
-  --cyan:#0099cc;--green:#38a169;
-  --azki-pink:#d63384;--azki-violet:#6f42c1;
+  --text:#1f2937;--dim:#4b5563;--mute:#6b7280;--bright:#0f172a;
+  --cyan:#0077a6;--green:#2f855a;
+  --azki-pink:#b83280;--azki-violet:#5b3dbf;
 }
+
+/* Light theme overrides for Uno utility colors */
+[data-theme="light"] .text-text{color:var(--text)!important;}
+[data-theme="light"] .text-dim{color:var(--dim)!important;}
+[data-theme="light"] .text-mute{color:var(--mute)!important;}
+[data-theme="light"] .text-bright{color:var(--bright)!important;}
+[data-theme="light"] .text-cyan{color:var(--cyan)!important;}
+[data-theme="light"] .text-green{color:var(--green)!important;}
+[data-theme="light"] .text-orange{color:var(--orange)!important;}
+[data-theme="light"] .text-red{color:var(--red)!important;}
+[data-theme="light"] .text-purple{color:var(--purple)!important;}
+[data-theme="light"] .text-gold{color:var(--gold)!important;}
+[data-theme="light"] .bg-bg{background-color:var(--bg)!important;}
+[data-theme="light"] .bg-surface{background-color:var(--surface)!important;}
+[data-theme="light"] .bg-s2{background-color:var(--s2)!important;}
+[data-theme="light"] .bg-s3{background-color:var(--s3)!important;}
+[data-theme="light"] .bg-border{background-color:var(--border)!important;}
+[data-theme="light"] .border-border{border-color:var(--border)!important;}
+[data-theme="light"] .border-b2{border-color:var(--b2)!important;}
+[data-theme="light"] .border-cyan{border-color:var(--cyan)!important;}
+[data-theme="light"] .border-green{border-color:var(--green)!important;}
+[data-theme="light"] .border-orange{border-color:var(--orange)!important;}
+[data-theme="light"] .border-red{border-color:var(--red)!important;}
+[data-theme="light"] .border-purple{border-color:var(--purple)!important;}
+[data-theme="light"] .border-gold{border-color:var(--gold)!important;}
 
 /* === RESET === */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}

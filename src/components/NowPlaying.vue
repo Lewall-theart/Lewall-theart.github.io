@@ -10,15 +10,38 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+type AzkiState = {
+  playing: boolean
+  track: { title: string }
+}
 const playing = ref(false)
 const notesEl = ref<HTMLElement|null>(null)
-const tracks = [{title:'Inochi'},{title:'without U'},{title:'Fake.Fake.Fake'},{title:'Hello alone'}]
-const track = ref(tracks[Math.floor(Math.random()*tracks.length)])
-function toggle(){playing.value=!playing.value;if(playing.value)spray()}
+const track = ref<{title:string}>({ title: 'Loading...' })
+
+function toggle(){
+  if(!playing.value)spray()
+  window.dispatchEvent(new CustomEvent('azki:toggle'))
+}
 function spray(){const ns=['♪','♫','♬','♩','🎵'];for(let i=0;i<6;i++)setTimeout(()=>{const el=document.createElement('span');el.className='spray';el.textContent=ns[Math.floor(Math.random()*ns.length)];el.style.cssText=`left:${20+Math.random()*60}%;animation-delay:${Math.random()*.3}s;font-size:${12+Math.random()*10}px;`;notesEl.value?.appendChild(el);setTimeout(()=>el.remove(),1400)},i*80)}
 const hs=[40,65,30,80,55,90,45,70,35,85,60,50]
 function barStyle(i:number){return{height:(playing.value?hs[(i-1)%hs.length]:20)+'%',animationDelay:playing.value?`${i*.08}s`:'0s',background:i%3===0?'var(--azki-pink)':i%3===1?'var(--azki-violet)':'var(--cyan)'}}
+
+function handleState(e: Event){
+  const detail = (e as CustomEvent<AzkiState>).detail
+  if(!detail) return
+  playing.value = !!detail.playing
+  if(detail.track?.title) track.value = detail.track
+}
+
+onMounted(() => {
+  window.addEventListener('azki:state', handleState as EventListener)
+  window.dispatchEvent(new CustomEvent('azki:request'))
+})
+
+onUnmounted(() => {
+  window.removeEventListener('azki:state', handleState as EventListener)
+})
 </script>
 <style scoped>
 .np{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden;}

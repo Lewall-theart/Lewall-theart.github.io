@@ -1,0 +1,156 @@
+---
+import Base from './Base.astro'
+import FlagReveal from '../components/FlagReveal.vue'
+import TableOfContents from '../components/TableOfContents.vue'
+
+interface Props {
+  title: string
+  description: string
+  date: Date | string
+  category: string
+  catColor?: 'cyan' | 'green' | 'orange' | 'red' | 'purple' | 'gold'
+  difficulty: 'easy' | 'medium' | 'hard' | 'insane'
+  tags: string[]
+  event?: string
+  readTime?: number
+  flag?: string
+  headings?: { slug?: string; id?: string; text: string; depth: number }[]
+  prev?: { slug: string; title: string }
+  next?: { slug: string; title: string }
+}
+
+const {
+  title,
+  description,
+  date,
+  category,
+  catColor = 'cyan',
+  difficulty,
+  tags,
+  event,
+  readTime,
+  flag,
+  headings = [],
+  prev,
+  next,
+} = Astro.props
+
+const displayDate = (date instanceof Date ? date : new Date(date))
+  .toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })
+const tocHeadings = headings.map(h => ({ id: h.slug ?? h.id ?? '', text: h.text, depth: h.depth }))
+---
+
+<Base title={title} description={description} showProgress={true}>
+  <article>
+    <!-- HEADER -->
+    <header class="wu-header">
+      <div class="wu-header-line"></div>
+      <div class="container-narrow">
+        <div class="breadcrumb">
+          <a href="/">Home</a><span>›</span>
+          <a href="/writeups">Writeups</a><span>›</span>
+          <span>{title}</span>
+        </div>
+        <div class="wu-tags">
+          <span class={`tag tag-${catColor}`}>{category}</span>
+          {tags.map((t:string)=><span class="tag tag-orange">{t}</span>)}
+          <div class={`diff diff-${difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+          <span class="cap">{difficulty}</span>
+        </div>
+        <h1 class="wu-title">{title}</h1>
+        <p class="wu-desc">{description}</p>
+        <div class="wu-meta">
+          <span>📅 {displayDate}</span>
+          {event && <span>🏆 {event}</span>}
+          {readTime && <span>⏱ {readTime} min read</span>}
+        </div>
+      </div>
+    </header>
+
+    <!-- BODY WITH TOC -->
+    <div class="wu-body">
+      <div class="wu-toc">
+        <TableOfContents client:load headings={tocHeadings} />
+      </div>
+      <div class="wu-content container-narrow">
+        <div class="prose">
+          <slot />
+        </div>
+        {flag && (
+          <div class="mt-16"><FlagReveal client:visible flag={flag} /></div>
+        )}
+        <!-- PREV / NEXT -->
+        <div class="prevnext">
+          {prev ? (
+            <a href={`/writeups/${prev.slug}`} class="pn-card pn-prev">
+              <div class="pn-label">← PREV</div>
+              <div class="pn-title">{prev.title}</div>
+            </a>
+          ) : <div/>}
+          {next ? (
+            <a href={`/writeups/${next.slug}`} class="pn-card pn-next">
+              <div class="pn-label">NEXT →</div>
+              <div class="pn-title">{next.title}</div>
+            </a>
+          ) : <div/>}
+        </div>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+.container-narrow{max-width:var(--page-narrow);margin:0 auto;padding:0 var(--page-pad);}
+.tag{display:inline-flex;align-items:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border:1px solid;}
+.tag-cyan{color:#00d4ff;border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
+.tag-orange{color:#ff6b35;border-color:rgba(255,107,53,.4);background:rgba(255,107,53,.06);}
+.tag-green{color:#7fff6b;border-color:rgba(127,255,107,.4);background:rgba(127,255,107,.06);}
+/* Header */
+.wu-header{padding:120px 0 64px;border-bottom:1px solid var(--border);margin-bottom:72px;position:relative;overflow:hidden;}
+.wu-header-line{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.3),var(--azki-pink),transparent);}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);margin-bottom:24px;}
+.breadcrumb a:hover{color:var(--cyan);}
+.wu-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.cap{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);text-transform:capitalize;}
+.wu-title{font-family:'Syne',sans-serif;font-weight:800;color:var(--bright);font-size:clamp(30px,5vw,56px);letter-spacing:-2px;line-height:1.05;margin-bottom:20px;}
+.wu-desc{font-size:15px;color:var(--dim);line-height:1.8;margin-bottom:32px;max-width:640px;}
+.wu-meta{display:flex;align-items:center;gap:20px;font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);flex-wrap:wrap;}
+/* Body with TOC sidebar */
+.wu-body{display:grid;grid-template-columns:1fr 220px;gap:40px;max-width:var(--page-max);margin:0 auto;padding:0 var(--page-pad) 100px;align-items:start;}
+.wu-toc{order:2;padding-left:0;padding-top:4px;}
+.wu-content{order:1;padding:0;}
+/* Remove default container padding since we handle it here */
+.wu-content.container-narrow{padding:0;}
+.wu-content .prose{font-size:16px;line-height:1.95;}
+.wu-content .prose code{font-size:.9em;}
+@media(max-width:1024px){
+  .wu-body{grid-template-columns:1fr;gap:24px;padding:0 var(--page-pad-sm) 88px;}
+  .wu-toc{display:none;}
+  .wu-content{padding:0 var(--page-pad-sm);}
+  .wu-header{padding:104px 0 56px;margin-bottom:64px;}
+  .wu-content .prose{font-size:15px;}
+}
+@media(max-width:768px){
+  .wu-header{padding:92px 0 48px;margin-bottom:56px;}
+  .wu-desc{font-size:14px;max-width:100%;}
+  .wu-meta{gap:12px;font-size:10px;}
+}
+@media(max-width:600px){
+  .wu-header .container-narrow{padding:0 var(--page-pad-sm);}
+  .wu-title{font-size:clamp(26px,9vw,40px);}
+  .prevnext{grid-template-columns:1fr;}
+  .pn-next{text-align:left;}
+  .pn-card{padding:20px;}
+  .wu-content .prose{font-size:14px;line-height:1.85;}
+}
+/* mt-16 */
+.mt-16{margin-top:64px;}
+/* Prev/Next */
+.prevnext{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:72px;}
+.pn-card{background:var(--surface);padding:24px;transition:background .2s;}
+.pn-card:hover{background:var(--s2);}
+.pn-next{text-align:right;}
+.pn-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--mute);margin-bottom:8px;}
+.pn-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:15px;transition:color .2s;}
+.pn-card:hover .pn-title{color:var(--cyan);}
+</style>

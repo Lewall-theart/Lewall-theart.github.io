@@ -1,0 +1,14 @@
+---
+import Writeup from '../../layouts/Writeup.astro'
+import { renderMarkdown } from '../../lib/markdown'
+import { getPrevNext, getWriteup } from '../../data/writeups'
+import raw from '../../writeups/new-writeup.md?raw'
+
+const meta = getWriteup('new-writeup')
+if (!meta) throw new Error('Writeup meta not found: new-writeup')
+const { code, metadata } = await renderMarkdown(raw)
+const { prev, next } = getPrevNext(meta.slug)
+---
+<Writeup {...meta} headings={metadata.headings} prev={prev} next={next}>
+  <Fragment set:html={code} />
+</Writeup>

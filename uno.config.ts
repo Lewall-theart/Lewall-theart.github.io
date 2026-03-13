@@ -22,10 +22,10 @@ export default defineConfig({
       red:     '#ff4757',
       purple:  '#bd93f9',
 
-      text:    '#c9d1d9',
-      dim:     '#6e7681',
-      mute:    '#3d4a56',
-      bright:  '#e6edf3',
+      text:    '#d7dde6',
+      dim:     '#a2acb9',
+      mute:    '#7c8796',
+      bright:  '#f3f6fa',
     },
     fontFamily: {
       display: ['Syne', 'sans-serif'],
@@ -50,8 +50,8 @@ export default defineConfig({
     'btn-ghost':  'btn border-b2 text-dim hover:border-dim hover:text-text',
 
     // Layout
-    'container': 'max-w-[1100px] mx-auto px-10',
-    'container-narrow': 'max-w-[780px] mx-auto px-10',
+    'container': 'max-w-[var(--page-max)] mx-auto px-10',
+    'container-narrow': 'max-w-[var(--page-narrow)] mx-auto px-10',
 
     // Section label
     'section-label': 'flex items-center gap-4 mb-9',
