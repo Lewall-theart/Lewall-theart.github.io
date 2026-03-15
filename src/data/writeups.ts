@@ -47,7 +47,7 @@ export const writeups: Writeup[] = [
     slug: 'cold-case',
     title: 'Cold Case – Difference Steganography',
     description: 'Hai tấm ảnh nhiễu. Không có gì để nhìn. Và một flag ẩn trong khoảng cách giữa chúng.',
-    date: new Date('2025-01-01'),
+    date: new Date('2026-03-15'),
     category: 'Steganography',
     catColor: 'purple',
     difficulty: 'beginner',
