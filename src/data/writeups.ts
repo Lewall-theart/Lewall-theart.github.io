@@ -5,7 +5,7 @@ export type Writeup = {
   date: Date
   category: string
   catColor: 'cyan' | 'green' | 'orange' | 'red' | 'purple' | 'gold'
-  difficulty: 'easy' | 'medium' | 'hard' | 'insane'
+  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'insane'
   tags: string[]
   event?: string
   readTime?: number
@@ -41,6 +41,20 @@ export const writeups: Writeup[] = [
     event: 'HackForge CTF',
     readTime: 5,
     flag: 'HackForge{double_base64_layers}',
+    featured: false,
+  },
+  {
+    slug: 'cold-case',
+    title: 'Cold Case – Difference Steganography',
+    description: 'Hai tấm ảnh nhiễu. Không có gì để nhìn. Và một flag ẩn trong khoảng cách giữa chúng.',
+    date: new Date('2025-01-01'),
+    category: 'Steganography',
+    catColor: 'purple',
+    difficulty: 'beginner',
+    tags: ['CTF', 'Steganography', 'Difference', 'Python'],
+    readTime: 10,
+    event: 'PsychCTF',
+    flag: 'psych{4lph4_ch4nn3l_d1d_th3_th1ng}',
     featured: false,
   },
   {

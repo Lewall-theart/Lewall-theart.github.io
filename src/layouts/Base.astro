@@ -5,9 +5,64 @@ import SearchModal from '../components/SearchModal.vue'
 import Navbar from '../components/Navbar.vue'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import AzkiPlayer from '../components/AzkiPlayer.vue'
-interface Props { title:string; description?:string; showProgress?:boolean }
-const { title, description='CTF writeups, crypto breakdowns, and hacking notes.', showProgress=false } = Astro.props
+interface Props {
+  title: string
+  description?: string
+  showProgress?: boolean
+  type?: 'website' | 'article'
+  image?: string
+  canonical?: string
+  publishedTime?: Date | string
+  modifiedTime?: Date | string
+  author?: string
+  tags?: string[]
+  section?: string
+}
+const {
+  title,
+  description = 'CTF writeups, crypto breakdowns, and hacking notes.',
+  showProgress = false,
+  type = 'website',
+  image,
+  canonical,
+  publishedTime,
+  modifiedTime,
+  author = 'Lewall',
+  tags = [],
+  section,
+} = Astro.props
 const currentPath = Astro.url.pathname
+const siteUrl = Astro.site ?? new URL('https://lewall-theart.github.io')
+const canonicalUrl = canonical ? new URL(canonical, siteUrl).href : Astro.url.href
+const imageUrl = image ? new URL(image, siteUrl).href : undefined
+const toIso = (d?: Date | string) => {
+  if (!d) return undefined
+  const dt = new Date(d)
+  return Number.isNaN(dt.getTime()) ? undefined : dt.toISOString()
+}
+const publishedIso = toIso(publishedTime)
+const modifiedIso = toIso(modifiedTime)
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        datePublished: publishedIso,
+        dateModified: modifiedIso,
+        author: { '@type': 'Person', name: author },
+        mainEntityOfPage: canonicalUrl,
+        image: imageUrl,
+        keywords: tags?.length ? tags.join(', ') : undefined,
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: '0xBlog',
+        url: siteUrl.href,
+        description,
+      }
 ---
 <!DOCTYPE html>
 <html lang="vi">
@@ -15,12 +70,33 @@ const currentPath = Astro.url.pathname
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta name="description" content={description}/>
+  <meta name="author" content={author}/>
+  <meta name="robots" content="index,follow"/>
+  <link rel="canonical" href={canonicalUrl}/>
   <title>{title} — 0xBlog</title>
   <ViewTransitions />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
   <link rel="alternate" type="application/rss+xml" title="0xBlog RSS" href="/rss.xml"/>
   <meta property="og:title" content={`${title} — 0xBlog`}/>
   <meta property="og:description" content={description}/>
+  <meta property="og:type" content={type}/>
+  <meta property="og:site_name" content="0xBlog"/>
+  <meta property="og:url" content={canonicalUrl}/>
+  <meta property="og:locale" content="vi_VN"/>
+  {imageUrl && <meta property="og:image" content={imageUrl}/>}
+  <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'}/>
+  <meta name="twitter:title" content={`${title} — 0xBlog`}/>
+  <meta name="twitter:description" content={description}/>
+  {imageUrl && <meta name="twitter:image" content={imageUrl}/>}
+  {type === 'article' && publishedIso && (
+    <meta property="article:published_time" content={publishedIso}/>
+  )}
+  {type === 'article' && modifiedIso && (
+    <meta property="article:modified_time" content={modifiedIso}/>
+  )}
+  {type === 'article' && section && <meta property="article:section" content={section}/>}
+  {type === 'article' && tags?.map(t => <meta property="article:tag" content={t} />)}
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 </head>
 <body>
   <div id="cursor-dot"></div>

@@ -14,7 +14,7 @@ import SkillBars from '../components/SkillBars.vue'
           <div class="font-mono text-[10px] tracking-[3px] uppercase text-mute mb-5">// who am i</div>
           <h1 class="font-display font-800 text-bright mb-2 tracking-[-3px]"
               style="font-size: clamp(48px, 8vw, 80px); line-height: 0.95">
-            Your<br>Name
+            Lewall<br>
           </h1>
           <div class="font-mono text-lg text-cyan mb-7 tracking-wide">@your_handle</div>
           <p class="text-[15px] text-dim leading-relaxed max-w-[520px]">
@@ -30,13 +30,13 @@ import SkillBars from '../components/SkillBars.vue'
         <!-- Stats card -->
         <div class="border border-border relative overflow-hidden">
           <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan to-green"></div>
-          <div class="p-8">
-            <div class="text-4xl mb-6">🧑‍💻</div>
-            <div class="grid grid-cols-2 gap-5 mb-6">
-              {[['42', 'Writeups'], ['7', '1st Blood'], ['18', 'Events'], ['Top 5%', 'CTFtime']].map(([n,l]) => (
+          <div class="p-6">
+            <div class="text-3xl mb-4">🧑‍💻</div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              {[['12', 'Writeups'], ['1', '1st Blood'], ['6', 'Events'], ['Top 30%', 'CTFtime']].map(([n,l]) => (
                 <div>
-                  <div class="font-display font-800 text-[28px] text-cyan tracking-[-1px] leading-none mb-1">{n}</div>
-                  <div class="font-mono text-[10px] tracking-[1px] text-mute uppercase">{l}</div>
+                  <div class="font-display font-800 text-[22px] text-cyan tracking-[-0.5px] leading-none mb-1">{n}</div>
+                  <div class="font-mono text-[9px] tracking-[0.8px] text-mute uppercase">{l}</div>
                 </div>
               ))}
             </div>
@@ -70,9 +70,9 @@ import SkillBars from '../components/SkillBars.vue'
         <div class="absolute left-5 top-0 bottom-0 w-px bg-border"></div>
 
         {[
-          { year: '2024', icon: '🏆', title: 'Top 10 — GoogleCTF 2024', desc: 'Giải được 3 challenge crypto trong top 10 fastest solves. Writeup cho "Papi Cris" được community share rộng rãi.' },
+          { year: '2024', icon: '🏁', title: 'Tham gia GoogleCTF', desc: 'Tập trung vào crypto & web, ghi chú lại các hướng giải và cải thiện tốc độ debug.' },
           { year: '2023', icon: '📝', title: 'Ra mắt 0xBlog', desc: 'Bắt đầu viết writeup có hệ thống thay vì ghi note rời rạc. Tập trung vào storytelling trong giải thích kỹ thuật.' },
-          { year: '2022', icon: '⚡', title: 'First 1st Blood — PicoCTF', desc: 'Lần đầu tiên solve trước mọi người trong một crypto challenge. Cảm giác không thể diễn tả.' },
+          { year: '2022', icon: '⚡', title: 'Lần đầu solve sớm trong team', desc: 'Có vài lần chạm được “first solve” trong đội ở challenge crypto. Động lực tăng rõ rệt.' },
           { year: '2021', icon: '🌱', title: 'Bắt đầu chơi CTF', desc: 'Challenge đầu tiên là Caesar cipher. Mất 2 tiếng. Nhưng cái cảm giác khi flag hiện ra đó đã thay đổi mọi thứ.' },
         ].map(item => (
           <div class="flex gap-7 mb-9 group">

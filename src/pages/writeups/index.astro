@@ -5,6 +5,10 @@ import { publishedWriteups } from '../../data/writeups'
 import WriteupFilter from '../../components/WriteupFilter.vue'
 
 const sorted = [...publishedWriteups].sort((a, b) => b.date.getTime() - a.date.getTime())
+const count = sorted.length
+const categories = new Set(sorted.map(w => w.category)).size
+const latest = sorted[0]?.date
+const latestLabel = latest ? latest.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }) : ''
 
 // Serialize for Vue
 const items = sorted.map(w => ({
@@ -22,32 +26,82 @@ const items = sorted.map(w => ({
 ---
 
 <Base title="Writeups">
-  <div class="wu-page">
-    <div class="container">
-
-      <!-- Header -->
-      <header class="border-b border-border pb-16 mb-16">
-        <div class="font-mono text-[10px] tracking-[3px] uppercase text-mute mb-4">// all writeups</div>
-        <h1 class="font-display font-800 tracking-[-3px] text-bright mb-4"
-            style="font-size: clamp(40px, 7vw, 72px)">
-          Writeups
-        </h1>
-        <p class="text-sm text-dim max-w-[480px] leading-relaxed">
-          Tất cả các bài giải — từ easy warmup đến insane challenge không có hint.
-        </p>
-      </header>
-
-      <!-- Vue interactive filter + grid -->
-      <WriteupFilter client:load items={items} />
-
+  <section class="wu-hero">
+    <div class="wu-hero__glow"></div>
+    <div class="wu-shell">
+      <div class="wu-hero__grid">
+        <div class="wu-hero__copy">
+          <div class="wu-kicker">// all writeups</div>
+          <h1 class="wu-hero__title">Writeups</h1>
+          <p class="wu-hero__desc">
+            Tất cả các bài giải — từ easy warmup đến insane challenge không có hint.
+          </p>
+        </div>
+        <aside class="wu-hero__card">
+          <div class="wu-card-kicker">// index stats</div>
+          <div class="wu-stats">
+            <div class="wu-stat">
+              <div class="wu-stat__num">{count}</div>
+              <div class="wu-stat__label">Writeups</div>
+            </div>
+            <div class="wu-stat">
+              <div class="wu-stat__num">{categories}</div>
+              <div class="wu-stat__label">Categories</div>
+            </div>
+            <div class="wu-stat">
+              <div class="wu-stat__num">{latestLabel || '—'}</div>
+              <div class="wu-stat__label">Latest</div>
+            </div>
+            <div class="wu-stat">
+              <div class="wu-stat__num">CTF</div>
+              <div class="wu-stat__label">Focus</div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="wu-list">
+    <div class="wu-shell">
+      <WriteupFilter client:load items={items} />
+    </div>
+  </section>
 </Base>
 
 <style>
-.wu-page{padding:120px 0 96px;}
-.wu-page header{padding-bottom:64px;margin-bottom:64px;}
-@media(max-width:1024px){.wu-page{padding:104px 0 80px;}.wu-page header{padding-bottom:56px;margin-bottom:56px;}}
-@media(max-width:640px){.wu-page{padding:88px 0 64px;}.wu-page header{padding-bottom:44px;margin-bottom:44px;}}
+.wu-shell{max-width:1320px;margin:0 auto;padding:0 var(--page-pad);}
+.wu-hero{position:relative;padding:140px 0 72px;border-bottom:1px solid var(--border);overflow:hidden;}
+.wu-hero__glow{position:absolute;left:50%;top:10%;transform:translateX(-50%);width:700px;height:360px;background:radial-gradient(ellipse at center,rgba(0,212,255,.08) 0%,transparent 70%);pointer-events:none;}
+.wu-hero__grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:48px;align-items:end;}
+.wu-hero__copy{max-width:720px;}
+.wu-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
+.wu-hero__title{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-3px;color:var(--bright);font-size:clamp(42px,7vw,76px);margin-bottom:16px;}
+.wu-hero__desc{font-size:14px;color:var(--dim);max-width:520px;line-height:1.8;}
+.wu-hero__card{position:relative;border:1px solid var(--border);background:var(--surface);padding:22px;}
+.wu-hero__card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--azki-pink),var(--azki-violet));}
+.wu-card-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
+.wu-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.wu-stat{border:1px solid var(--border);background:var(--s2);padding:12px;}
+.wu-stat__num{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:18px;letter-spacing:-.5px;}
+.wu-stat__label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-top:6px;}
+
+.wu-list{padding:40px 0 96px;}
+
+@media(max-width:1100px){
+  .wu-shell{padding:0 var(--page-pad-sm);}
+  .wu-hero{padding:120px 0 64px;}
+  .wu-hero__grid{grid-template-columns:1fr;gap:24px;}
+  .wu-hero__card{max-width:560px;}
+}
+@media(max-width:768px){
+  .wu-hero{padding:104px 0 56px;}
+  .wu-hero__title{font-size:clamp(34px,9vw,56px);}
+  .wu-hero__desc{font-size:13px;max-width:100%;}
+}
+@media(max-width:640px){
+  .wu-hero{padding:92px 0 48px;}
+  .wu-list{padding:32px 0 72px;}
+}
 </style>
 

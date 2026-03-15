@@ -1,29 +1,30 @@
 <template>
   <div>
-    <!-- Filters -->
-    <div class="filters">
-      <button
-        v-for="f in catFilters" :key="f"
-        class="filter-btn"
-        :class="{ active: activeFilter === f }"
-        @click="setFilter(f)"
-      >{{ f }}</button>
-      <div class="filter-sep"></div>
-      <button
-        v-for="d in diffFilters" :key="d"
-        class="filter-btn"
-        :class="{ active: activeDiff === d }"
-        @click="setDiff(d)"
-      >{{ d }}</button>
-    </div>
+    <!-- Filters + Count -->
+    <div class="wu-toolbar">
+      <div class="filters">
+        <button
+          v-for="f in catFilters" :key="f"
+          class="filter-btn"
+          :class="{ active: activeFilter === f }"
+          @click="setFilter(f)"
+        >{{ f }}</button>
+        <div class="filter-sep"></div>
+        <button
+          v-for="d in diffFilters" :key="d"
+          class="filter-btn"
+          :class="{ active: activeDiff === d }"
+          @click="setDiff(d)"
+        >{{ d }}</button>
+      </div>
 
-    <!-- Count -->
-    <div class="result-count">
-      <span class="font-mono text-[11px] text-mute">
-        {{ filtered.length }} writeup{{ filtered.length !== 1 ? 's' : '' }}
-        <template v-if="activeFilter !== 'All'"> in {{ activeFilter }}</template>
-        <template v-if="activeDiff !== 'All'"> · {{ activeDiff }}</template>
-      </span>
+      <div class="result-count">
+        <span class="font-mono text-[11px] text-mute">
+          {{ filtered.length }} writeup{{ filtered.length !== 1 ? 's' : '' }}
+          <template v-if="activeFilter !== 'All'"> in {{ activeFilter }}</template>
+          <template v-if="activeDiff !== 'All'"> · {{ activeDiff }}</template>
+        </span>
+      </div>
     </div>
 
     <!-- Grid -->
@@ -36,8 +37,11 @@
       >
         <div class="wu-card__top">
           <span class="wu-cat font-mono text-[10px] tracking-[2px] uppercase text-mute">{{ w.category }}</span>
-          <div :class="`diff diff-${w.difficulty}`">
-            <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+          <div class="wu-card__top-meta">
+            <div :class="`diff diff-${w.difficulty}`">
+              <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+            </div>
+            <span class="wu-date">{{ fmt(w.date) }}</span>
           </div>
         </div>
 
@@ -82,7 +86,7 @@ const activeFilter = ref('All')
 const activeDiff   = ref('All')
 
 const catFilters  = computed(() => ['All', ...new Set(props.items.map(i => i.category))])
-const diffFilters = ['All', 'easy', 'medium', 'hard', 'insane']
+const diffFilters = ['All', 'beginner', 'easy', 'medium', 'hard', 'insane']
 
 const filtered = computed(() =>
   props.items.filter(w => {
@@ -94,6 +98,12 @@ const filtered = computed(() =>
 
 function setFilter(f: string) { activeFilter.value = f }
 function setDiff(d: string)   { activeDiff.value = d }
+function fmt(d: string) {
+  const date = new Date(d)
+  return Number.isNaN(date.getTime())
+    ? d
+    : date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 </script>
 
 <style scoped>
@@ -108,13 +118,18 @@ function setDiff(d: string)   { activeDiff.value = d }
 /* Diff dots */
 .diff { display: inline-flex; gap: 4px; align-items: center; }
 .diff-dot { width: 7px; height: 7px; border-radius: 50%; background: #263547; }
+.diff-beginner .diff-dot:nth-child(-n+1) { background: #7fff6b; }
 .diff-easy   .diff-dot:nth-child(-n+1) { background: #7fff6b; }
 .diff-medium .diff-dot:nth-child(-n+2) { background: #ffd700; }
 .diff-hard   .diff-dot:nth-child(-n+3) { background: #ff6b35; }
 .diff-insane .diff-dot                 { background: #ff4757; }
 
+.wu-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-bottom:24px;padding:12px 14px;border:1px solid var(--border);background:var(--surface);
+}
 .filters {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 .filter-btn {
   font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
@@ -127,27 +142,30 @@ function setDiff(d: string)   { activeDiff.value = d }
   border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.06);
 }
 .filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-.result-count { margin-bottom: 36px; }
+.result-count { margin-left: auto; }
 
 .wu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
 }
 .wu-card {
-  background: var(--surface); padding: 34px 36px; border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(0,212,255,0.04), rgba(0,212,255,0) 45%), var(--surface);
+  padding: 30px 32px; border: 1px solid var(--border);
   display: flex; flex-direction: column; gap: 14px;
-  transition: background 0.2s; position: relative; overflow: hidden;
+  transition: background 0.2s, transform 0.2s; position: relative; overflow: hidden;
 }
 .wu-card::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: #00d4ff; transform: scaleY(0); transform-origin: bottom;
   transition: transform 0.3s ease;
 }
-.wu-card:hover { background: var(--s2); }
+.wu-card:hover { background: var(--s2); transform: translateY(-2px); }
 .wu-card:hover::before { transform: scaleY(1); }
 
-.wu-card__top { display: flex; align-items: center; justify-content: space-between; }
+.wu-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wu-card__top-meta{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);}
+.wu-date{letter-spacing:1px;text-transform:uppercase;}
 .wu-card__title {
   font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700;
   color: var(--bright); line-height: 1.2; transition: color 0.2s;
@@ -181,13 +199,14 @@ function setDiff(d: string)   { activeDiff.value = d }
 
 @media (max-width: 900px) {
   .wu-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-  .wu-card { padding: 28px 30px; }
+  .wu-card { padding: 26px 28px; }
 }
 @media (max-width: 640px) {
   .wu-grid { grid-template-columns: 1fr; }
   .wu-card { padding: 22px 20px; }
+  .wu-toolbar { gap: 12px; padding: 10px 12px; }
+  .result-count { width: 100%; }
   .filters { gap: 8px; }
-  .result-count { margin-bottom: 24px; }
   .wu-card__title { font-size: 17px; }
   .wu-card__desc { font-size: 12px; }
 }

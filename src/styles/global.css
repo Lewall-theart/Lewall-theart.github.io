@@ -80,6 +80,7 @@ h1,h2,h3,h4,h5{font-family:'Syne',sans-serif;color:var(--bright);line-height:1.1
 /* === DIFF DOTS === */
 .diff{display:inline-flex;gap:4px;align-items:center;}
 .diff-dot{width:7px;height:7px;border-radius:50%;background:var(--b2);}
+.diff-beginner .diff-dot:nth-child(-n+1){background:var(--green);}
 .diff-easy .diff-dot:nth-child(-n+1){background:var(--green);}
 .diff-medium .diff-dot:nth-child(-n+2){background:var(--gold);}
 .diff-hard .diff-dot:nth-child(-n+3){background:var(--orange);}
