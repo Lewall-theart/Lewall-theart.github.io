@@ -38,28 +38,7 @@ tags:
 - **S6:** Ký tự mật mã được vẽ ẩn trong khung hình thứ 29 của bức ảnh động GIF.
 
 ---
-
-## 2. Bảng tổng kết 6 mảnh ghép
-
-Dưới đây là bảng tổng hợp giá trị của từng mảnh chìa khóa thu được qua quá trình bóc tách:
-
-| Mảnh ghép | Nguồn gốc và ý nghĩa kỹ thuật | Giá trị 16 ký tự Hex |
-| :--- | :--- | :--- |
-| **S1** | 16 ký tự đầu của chuỗi giao dịch Blockchain Sepolia 1 | `0446b89793812baf` |
-| **S2** | Mã băm SHA-256 dấu vân tay danh sách hàm hệ thống `Nt*` | `cc3cec7b19bc6381` |
-| **S3** | 16 ký tự đầu của chuỗi giao dịch Blockchain Sepolia 2 | `ab51ba2f81be8cb8` |
-| **S4** | Chìa khóa `g_k_dotnet` trích xuất từ tệp tin COFF nhúng | `f5b29d9f8fc0f574` |
-| **S5** | Kết quả tính toán từ cỗ máy thuật toán .NET | `724bb67f13c6aee8` |
-| **S6** | Chuỗi ký tự vẽ trên khung hình số 29 của file ảnh GIF | `4519aff2332e8dd3` |
-
-**Mật mã cờ hoàn chỉnh:**
-```text
-DF26{0446b89793812baf_cc3cec7b19bc6381_ab51ba2f81be8cb8_f5b29d9f8fc0f574_724bb67f13c6aee8_4519aff2332e8dd3}
-```
-
----
-
-## 3. Sơ đồ luồng giải mã trực quan
+## 2. Sơ đồ luồng giải mã trực quan
 
 Để người đọc hình dung dễ dàng, toàn bộ kiến trúc của thử thách được chia làm 2 giai đoạn chính: **Thu thập chìa khóa ban đầu** và **Hội tụ tính toán để mở khóa quà tặng**.
 
@@ -96,7 +75,7 @@ flowchart TD
 
 ---
 
-## 4. Phân tích chi tiết từng giai đoạn
+## 3. Phân tích chi tiết từng giai đoạn
 
 ### Giai đoạn 1: Khôi phục mảnh S1
 
@@ -146,7 +125,7 @@ flowchart TD
    import hashlib
 
    # Đọc file ntdll.dll từ hệ điều hành Windows 11 x64
-   pe = pefile.PE("C:\Windows\System32\ntdll.dll")
+   pe = pefile.PE(r"C:\Windows\System32\ntdll.dll")
    valid_syscalls = []
 
    for exp in pe.DIRECTORY_ENTRY_EXPORT.symbols:
@@ -161,8 +140,7 @@ flowchart TD
    valid_syscalls.sort()
    # Ghép nối bằng ký tự xuống dòng 
 
-   payload = "
-".join(valid_syscalls).encode("utf-8")
+   payload = "\n".join(valid_syscalls).encode("utf-8")
 
    # Tính mã băm SHA-256 đại diện cho dấu vân tay hệ thống
    sha256_hash = hashlib.sha256(payload).hexdigest()
@@ -297,7 +275,7 @@ flowchart TD
 
 ---
 
-## 5. Script giải mã tự động & Kiểm chứng
+## 4. Script giải mã tự động & Kiểm chứng
 
 Sau khi đã hoàn thành từng giai đoạn, toàn bộ 6 mảnh chìa khóa được kết nối lại trong một script duy nhất để xuất ra Flag cuối cùng:
 
@@ -321,7 +299,7 @@ if __name__ == "__main__":
 
 ---
 
-## 6. Bài học rút ra
+## 5. Bài học rút ra
 
 Thử thách `adobe_keygen.exe` mang lại góc nhìn thú vị cho cả người làm chuyên môn lẫn người yêu công nghệ:
 1. **Kiến trúc phòng thủ đa lớp (Defense in Depth):** Thay vì chỉ giấu mật mã ở một chỗ, phần mềm chia nhỏ chìa khóa ra nhiều nơi và bắt buộc người phân tích phải thông thạo nhiều nền tảng: từ kiểm tra hệ điều hành Windows, bóc tách cấu trúc tệp tin, phân tích mã nguồn máy ảo (.NET) cho đến kỹ thuật giấu tin trong đồ họa.
