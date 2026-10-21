@@ -16,6 +16,20 @@ export type Writeup = {
 
 export const writeups: Writeup[] = [
   {
+    slug: 'adobe-keygen',
+    title: 'Adobe Keygen – Reverse Engineering',
+    description: 'Bóc tách binary PE64 đa tầng: quét ntdll syscall stubs, giải mã RC4 COFF object, phân tích .NET payload và trích xuất visual steganography trên animation GIF.',
+    date: new Date('2026-10-21'),
+    category: 'Reverse',
+    catColor: 'purple',
+    difficulty: 'hard',
+    tags: ['Reverse Engineering', 'Windows x64', 'NTDLL', 'Syscall', 'COFF', '.NET', 'RC4', 'Steganography'],
+    event: 'CTF Challenge',
+    readTime: 12,
+    flag: 'DF26{0446b89793812baf_cc3cec7b19bc6381_ab51ba2f81be8cb8_f5b29d9f8fc0f574_724bb67f13c6aee8_4519aff2332e8dd3}',
+    featured: true,
+  },
+  {
     slug: 'basic-encoding-soup',
     title: 'Basic Encoding Soup',
     description: 'Ba lớp mặt nạ xếp chồng nhau — Hex, Base64, ROT13. Không cần toán học, chỉ cần đôi mắt biết nhìn.',
