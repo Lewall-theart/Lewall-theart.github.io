@@ -1,73 +1,125 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="open" class="search-overlay" @click.self="close">
-        <div class="search-box">
-          <!-- Header -->
-          <div class="search-header">
-            <span class="search-icon">⌕</span>
-            <input
-              ref="inputEl"
-              v-model="query"
-              type="text"
-              placeholder="Tìm writeup, category, tag..."
-              autocomplete="off"
-              spellcheck="false"
-              @keydown.down.prevent="navigate(1)"
-              @keydown.up.prevent="navigate(-1)"
-              @keydown.enter.prevent="openResult"
-              @keydown.esc="close"
-            />
-            <button class="search-close" @click="close">ESC</button>
-          </div>
+    <div
+      v-if="open"
+      class="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] px-4"
+      @click="close"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search"
+    >
+      <!-- Dimmed overlay -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true"></div>
 
-          <!-- Results -->
-          <div class="search-results" ref="resultsEl">
-            <template v-if="query.length > 0">
-              <a
-                v-for="(r, i) in results"
-                :key="r.url"
-                :href="r.url"
-                class="search-result"
-                :class="{ 'search-result--active': i === activeIndex }"
-                @click="close"
-                @mouseenter="activeIndex = i"
-              >
-                <div class="search-result__title" v-html="highlight(r.title)"></div>
-                <div class="search-result__meta">
-                  <span :class="`tag-${r.catColor}`" class="tag">{{ r.category }}</span>
-                  <span v-for="t in r.tags" :key="t" class="tag tag-orange">{{ t }}</span>
-                </div>
-              </a>
-              <div v-if="results.length === 0" class="search-empty">
-                Không tìm thấy kết quả cho "<strong>{{ query }}</strong>"
+      <!-- Modal panel -->
+      <div
+        class="relative w-full max-w-xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden z-10"
+        @click.stop
+      >
+        <!-- Search input header -->
+        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-neutral-200 dark:border-neutral-800">
+          <svg
+            class="h-4 w-4 shrink-0 text-neutral-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            ref="inputEl"
+            v-model="query"
+            type="text"
+            placeholder="Search writeups, tags, categories…"
+            class="flex-1 bg-transparent text-sm font-mono text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 outline-none"
+            @keydown.down.prevent="navigate(1)"
+            @keydown.up.prevent="navigate(-1)"
+            @keydown.enter.prevent="openResult"
+            @keydown.esc="close"
+          />
+          <button
+            v-if="query"
+            @click="query = ''"
+            aria-label="Clear search"
+            class="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono rounded border border-neutral-300 dark:border-neutral-700 text-neutral-400">
+            ESC
+          </kbd>
+        </div>
+
+        <!-- Search Results List -->
+        <div class="max-h-[60vh] overflow-y-auto p-2" ref="resultsEl">
+          <template v-if="query.trim().length > 0">
+            <a
+              v-for="(r, i) in results"
+              :key="r.slug"
+              :href="`/writeups/${r.slug}`"
+              class="block rounded-xl p-3 transition-colors text-left no-underline"
+              :class="i === activeIndex ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'"
+              @click="close"
+              @mouseenter="activeIndex = i"
+            >
+              <div class="font-mono text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                <span>{{ r.category }}</span>
+                <span>·</span>
+                <span>{{ r.difficulty }}</span>
               </div>
-            </template>
-            <div v-else class="search-recent">
-              <div class="search-recent__label">// Recent</div>
-              <a v-for="r in recentItems" :key="r.url" :href="r.url" class="search-result" @click="close">
-                <div class="search-result__title">{{ r.title }}</div>
-                <div class="search-result__meta">
-                  <span :class="`tag-${r.catColor}`" class="tag">{{ r.category }}</span>
-                </div>
-              </a>
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white mb-1">
+                {{ r.title }}
+              </div>
+              <div class="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-1">
+                {{ r.description }}
+              </div>
+            </a>
+            <div v-if="results.length === 0" class="py-8 text-center text-xs font-mono text-neutral-500">
+              No writeups found for "{{ query }}"
             </div>
-          </div>
+          </template>
 
-          <!-- Hints -->
-          <div class="search-hints">
-            <span><kbd>↑</kbd><kbd>↓</kbd> điều hướng</span>
-            <span><kbd>↵</kbd> mở</span>
-            <span><kbd>esc</kbd> đóng</span>
-          </div>
+          <template v-else>
+            <div class="px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+              // Recent Writeups
+            </div>
+            <a
+              v-for="r in recentItems"
+              :key="r.slug"
+              :href="`/writeups/${r.slug}`"
+              class="block rounded-xl p-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-left no-underline"
+              @click="close"
+            >
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white">
+                {{ r.title }}
+              </div>
+              <div class="text-xs text-neutral-500 dark:text-neutral-400 font-mono mt-0.5">
+                {{ r.category }} · {{ r.difficulty }}
+              </div>
+            </a>
+          </template>
+        </div>
+
+        <!-- Footer / Shortcuts -->
+        <div class="px-4 py-2 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+          <span>Navigate with <kbd class="px-1 border rounded">↑</kbd> <kbd class="px-1 border rounded">↓</kbd></span>
+          <span>Select with <kbd class="px-1 border rounded">↵</kbd></span>
         </div>
       </div>
-    </Transition>
+    </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { publishedWriteups } from '../data/writeups'
 
 const open = ref(false)
 const query = ref('')
@@ -75,46 +127,36 @@ const activeIndex = ref(0)
 const inputEl = ref<HTMLInputElement | null>(null)
 const resultsEl = ref<HTMLElement | null>(null)
 
-// ── WRITEUP DATA (extend as you add writeups) ──
-const writeups = [
-  { title: "Papi Cris' Fortune", category: 'Crypto', catColor: 'cyan', tags: ['RSA', 'Small Prime'], url: '/writeups/papi-cris' },
-  { title: 'Baby RSA',           category: 'Crypto', catColor: 'cyan', tags: ['RSA', 'e=3'],         url: '/writeups/baby-rsa' },
-  { title: 'Forbidden Injection',category: 'Web',    catColor: 'red',  tags: ['SQLi', 'WAF Bypass'], url: '/writeups/forbidden-injection' },
-  { title: 'Stack Overflow 101', category: 'Pwn',    catColor: 'orange',tags: ['Buffer Overflow', 'ROP'], url: '/writeups/stack-overflow' },
-  { title: 'Blind Vision',       category: 'Reverse',catColor: 'purple',tags: ['IDA', 'Anti-debug'], url: '/writeups/blind-vision' },
-]
-
-const recentItems = writeups.slice(0, 3)
+const recentItems = computed(() => publishedWriteups.slice(0, 4))
 
 const results = computed(() => {
-  if (!query.value.trim()) return []
-  const q = query.value.toLowerCase()
-  return writeups.filter(w =>
-    w.title.toLowerCase().includes(q) ||
-    w.category.toLowerCase().includes(q) ||
-    w.tags.some(t => t.toLowerCase().includes(q))
+  const q = query.value.trim().toLowerCase()
+  if (!q) return []
+  return publishedWriteups.filter(
+    (w) =>
+      w.title.toLowerCase().includes(q) ||
+      w.description.toLowerCase().includes(q) ||
+      w.category.toLowerCase().includes(q) ||
+      w.tags.some((t) => t.toLowerCase().includes(q))
   )
 })
 
-watch(results, () => { activeIndex.value = 0 })
-watch(query, () => { activeIndex.value = 0 })
-
-function highlight(text: string) {
-  if (!query.value) return text
-  return text.replace(
-    new RegExp(`(${query.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
-    '<mark>$1</mark>'
-  )
-}
+watch(results, () => {
+  activeIndex.value = 0
+})
 
 function navigate(dir: number) {
   const max = results.value.length - 1
+  if (max < 0) return
   activeIndex.value = Math.max(0, Math.min(max, activeIndex.value + dir))
 }
 
 function openResult() {
   const r = results.value[activeIndex.value]
-  if (r) { window.location.href = r.url; close() }
+  if (r) {
+    window.location.href = `/writeups/${r.slug}`
+    close()
+  }
 }
 
 function openModal() {
@@ -125,99 +167,25 @@ function openModal() {
 function close() {
   open.value = false
   query.value = ''
-  activeIndex.value = 0
 }
 
-function onKeydown(e: KeyboardEvent) {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openModal() }
-  if (e.key === 'Escape' && open.value) close()
+function handleKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    openModal()
+  }
+  if (e.key === 'Escape' && open.value) {
+    close()
+  }
 }
 
 onMounted(() => {
-  window.addEventListener('keydown', onKeydown)
   window.addEventListener('open-search', openModal)
+  window.addEventListener('keydown', handleKeydown)
 })
+
 onUnmounted(() => {
-  window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('open-search', openModal)
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
-
-<style scoped>
-.search-overlay {
-  position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: flex-start; justify-content: center;
-  padding-top: 100px;
-}
-.search-box {
-  width: 100%; max-width: 580px;
-  background: var(--surface);
-  border: 1px solid var(--b2);
-  box-shadow: 0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,212,255,0.05);
-  overflow: hidden;
-}
-.search-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-}
-.search-icon { font-size: 20px; color: var(--dim); flex-shrink: 0; }
-.search-header input {
-  flex: 1; background: none; border: none; outline: none;
-  font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--bright);
-}
-.search-header input::placeholder { color: var(--mute); }
-.search-close {
-  font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px;
-  color: var(--mute); border: 1px solid var(--b2); padding: 3px 8px;
-  background: none; cursor: pointer; transition: all 0.2s;
-}
-.search-close:hover { color: var(--text); border-color: var(--dim); }
-.search-results { max-height: 340px; overflow-y: auto; }
-.search-result {
-  display: block; padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.15s; cursor: pointer;
-}
-.search-result:hover,
-.search-result--active { background: var(--s2); }
-.search-result__title {
-  font-family: 'Syne', sans-serif; font-weight: 700;
-  color: var(--bright); margin-bottom: 7px;
-}
-.search-result__title :deep(mark) {
-  background: rgba(0,212,255,0.2); color: var(--cyan);
-}
-.search-result__meta { display: flex; gap: 6px; flex-wrap: wrap; }
-.search-empty { padding: 24px 20px; color: var(--mute); font-size: 13px; }
-.search-empty strong { color: var(--text); }
-.search-recent__label {
-  padding: 10px 20px 4px;
-  font-family: 'Space Mono', monospace; font-size: 10px;
-  letter-spacing: 2px; color: var(--mute); text-transform: uppercase;
-}
-.search-hints {
-  padding: 10px 20px; border-top: 1px solid var(--border);
-  display: flex; gap: 20px;
-  font-family: 'Space Mono', monospace; font-size: 10px; color: var(--mute);
-}
-.search-hints kbd {
-  background: var(--s2); border: 1px solid var(--b2);
-  padding: 1px 5px; border-radius: 2px; color: var(--dim); font-size: 11px;
-}
-
-/* Tags in search */
-.tag { display: inline-flex; align-items: center; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 8px; border: 1px solid; }
-.tag-cyan   { color: #00d4ff; border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.06); }
-.tag-green  { color: #7fff6b; border-color: rgba(127,255,107,0.4); background: rgba(127,255,107,0.06); }
-.tag-orange { color: #ff6b35; border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.06); }
-.tag-red    { color: #ff4757; border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
-.tag-purple { color: #bd93f9; border-color: rgba(189,147,249,0.4); background: rgba(189,147,249,0.06); }
-
-/* Modal transition */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-active .search-box, .modal-leave-active .search-box { transition: transform 0.2s ease, opacity 0.2s ease; }
-.modal-enter-from .search-box, .modal-leave-to .search-box { transform: translateY(-16px) scale(0.98); opacity: 0; }
-</style>

@@ -1,72 +1,101 @@
 <template>
   <div>
-    <!-- Filters + Count -->
-    <div class="wu-toolbar">
-      <div class="filters">
+    <!-- Filters Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+      <div class="flex flex-wrap items-center gap-2">
         <button
-          v-for="f in catFilters" :key="f"
-          class="filter-btn"
-          :class="{ active: activeFilter === f }"
-          @click="setFilter(f)"
-        >{{ f }}</button>
-        <div class="filter-sep"></div>
+          v-for="f in catFilters"
+          :key="f"
+          class="px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest transition-colors"
+          :class="
+            activeFilter === f
+              ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-semibold'
+              : 'border border-neutral-300/70 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-500'
+          "
+          @click="activeFilter = f"
+        >
+          {{ f }}
+        </button>
+
+        <div class="h-4 w-px bg-neutral-300 dark:bg-neutral-700 mx-1 hidden sm:block"></div>
+
         <button
-          v-for="d in diffFilters" :key="d"
-          class="filter-btn"
-          :class="{ active: activeDiff === d }"
-          @click="setDiff(d)"
-        >{{ d }}</button>
+          v-for="d in diffFilters"
+          :key="d"
+          class="px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest transition-colors"
+          :class="
+            activeDiff === d
+              ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-semibold'
+              : 'border border-neutral-300/70 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-500'
+          "
+          @click="activeDiff = d"
+        >
+          {{ d }}
+        </button>
       </div>
 
-      <div class="result-count">
-        <span class="font-mono text-[11px] text-mute">
-          {{ filtered.length }} writeup{{ filtered.length !== 1 ? 's' : '' }}
-          <template v-if="activeFilter !== 'All'"> in {{ activeFilter }}</template>
-          <template v-if="activeDiff !== 'All'"> · {{ activeDiff }}</template>
-        </span>
+      <div class="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+        {{ filtered.length }} writeup{{ filtered.length !== 1 ? 's' : '' }}
       </div>
     </div>
 
-    <!-- Grid -->
-    <TransitionGroup name="card-grid" tag="div" class="wu-grid">
-      <a
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <article
         v-for="w in filtered"
         :key="w.slug"
-        :href="`/writeups/${w.slug}`"
-        class="wu-card"
+        class="group surface-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
       >
-        <div class="wu-card__top">
-          <span class="wu-cat font-mono text-[10px] tracking-[2px] uppercase text-mute">{{ w.category }}</span>
-          <div class="wu-card__top-meta">
-            <div :class="`diff diff-${w.difficulty}`">
-              <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="inline-flex items-center rounded-full border border-neutral-900/80 bg-neutral-900 px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-widest text-neutral-100 dark:border-neutral-100/80 dark:bg-neutral-100 dark:text-neutral-900">
+              {{ w.category }}
+            </span>
+            <div class="flex items-center gap-2">
+              <div :class="`diff diff-${w.difficulty}`">
+                <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+              </div>
+              <time class="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                {{ fmt(w.date) }}
+              </time>
             </div>
-            <span class="wu-date">{{ fmt(w.date) }}</span>
           </div>
+
+          <a :href="`/writeups/${w.slug}`" class="block no-underline">
+            <h2 class="text-xl font-semibold mb-2.5 text-neutral-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+              {{ w.title }}
+            </h2>
+            <p class="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed mb-4 line-clamp-3">
+              {{ w.description }}
+            </p>
+          </a>
         </div>
 
-        <div class="wu-card__title">{{ w.title }}</div>
-
-        <p class="wu-card__desc">{{ w.description }}</p>
-
-        <div class="wu-card__tags">
-          <span :class="`tag-${w.catColor}`" class="tag">{{ w.category }}</span>
-          <span v-for="t in w.tags.slice(0,2)" :key="t" class="tag tag-orange">{{ t }}</span>
-        </div>
-
-        <div class="wu-card__footer">
-          <div class="wu-card__meta">
-            <span>{{ w.event ?? '' }}</span>
-            <span v-if="w.readTime">· {{ w.readTime }} min</span>
+        <div class="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between mt-auto">
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="t in w.tags.slice(0, 2)"
+              :key="t"
+              class="text-[10px] font-mono text-neutral-400 px-2 py-0.5 rounded border border-neutral-200 dark:border-neutral-800"
+            >
+              #{{ t }}
+            </span>
           </div>
-          <span class="wu-card__arrow">→</span>
-        </div>
-      </a>
-    </TransitionGroup>
 
-    <div v-if="filtered.length === 0" class="empty-state">
-      <div class="font-mono text-[40px] mb-4 opacity-20">∅</div>
-      <div class="font-mono text-sm text-mute">Không có writeup nào phù hợp với filter hiện tại.</div>
+          <a
+            :href="`/writeups/${w.slug}`"
+            class="text-xs font-mono uppercase tracking-wider text-neutral-800 dark:text-neutral-200 hover:underline"
+          >
+            Read more →
+          </a>
+        </div>
+      </article>
+    </div>
+
+    <!-- Empty state -->
+    <div v-if="filtered.length === 0" class="py-16 text-center">
+      <div class="font-mono text-3xl mb-2 text-neutral-400">∅</div>
+      <p class="font-mono text-sm text-neutral-500">No writeups match the selected filters.</p>
     </div>
   </div>
 </template>
@@ -75,144 +104,38 @@
 import { ref, computed } from 'vue'
 
 interface WriteupItem {
-  slug: string; title: string; description: string
-  category: string; catColor: string; difficulty: string
-  tags: string[]; date: string; event?: string; readTime?: number
+  slug: string
+  title: string
+  description: string
+  category: string
+  catColor: string
+  difficulty: string
+  tags: string[]
+  date: string
+  event?: string
+  readTime?: number
 }
 
 const props = defineProps<{ items: WriteupItem[] }>()
 
 const activeFilter = ref('All')
-const activeDiff   = ref('All')
+const activeDiff = ref('All')
 
-const catFilters  = computed(() => ['All', ...new Set(props.items.map(i => i.category))])
-const diffFilters = ['All', 'beginner', 'easy', 'medium', 'hard', 'insane']
+const catFilters = computed(() => ['All', ...new Set(props.items.map((i) => i.category))])
+const diffFilters = ['All', 'easy', 'medium', 'hard']
 
 const filtered = computed(() =>
-  props.items.filter(w => {
-    const catOk  = activeFilter.value === 'All' || w.category === activeFilter.value
-    const diffOk = activeDiff.value === 'All'   || w.difficulty === activeDiff.value
+  props.items.filter((w) => {
+    const catOk = activeFilter.value === 'All' || w.category === activeFilter.value
+    const diffOk = activeDiff.value === 'All' || w.difficulty === activeDiff.value
     return catOk && diffOk
   })
 )
 
-function setFilter(f: string) { activeFilter.value = f }
-function setDiff(d: string)   { activeDiff.value = d }
 function fmt(d: string) {
   const date = new Date(d)
   return Number.isNaN(date.getTime())
     ? d
-    : date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })
+    : date.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>
-
-<style scoped>
-/* Tags */
-.tag { display: inline-flex; align-items: center; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 8px; border: 1px solid; }
-.tag-cyan   { color: #00d4ff; border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.06); }
-.tag-green  { color: #7fff6b; border-color: rgba(127,255,107,0.4); background: rgba(127,255,107,0.06); }
-.tag-orange { color: #ff6b35; border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.06); }
-.tag-red    { color: #ff4757; border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
-.tag-purple { color: #bd93f9; border-color: rgba(189,147,249,0.4); background: rgba(189,147,249,0.06); }
-
-/* Diff dots */
-.diff { display: inline-flex; gap: 4px; align-items: center; }
-.diff-dot { width: 7px; height: 7px; border-radius: 50%; background: #263547; }
-.diff-beginner .diff-dot:nth-child(-n+1) { background: #7fff6b; }
-.diff-easy   .diff-dot:nth-child(-n+1) { background: #7fff6b; }
-.diff-medium .diff-dot:nth-child(-n+2) { background: #ffd700; }
-.diff-hard   .diff-dot:nth-child(-n+3) { background: #ff6b35; }
-.diff-insane .diff-dot                 { background: #ff4757; }
-
-.wu-toolbar{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  margin-bottom:24px;padding:12px 14px;border:1px solid var(--border);background:var(--surface);
-}
-.filters {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.filter-btn {
-  font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
-  text-transform: uppercase; padding: 6px 14px;
-  border: 1px solid var(--border); color: var(--dim);
-  background: none; cursor: pointer;
-  transition: all 0.2s;
-}
-.filter-btn:hover, .filter-btn.active {
-  border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.06);
-}
-.filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-.result-count { margin-left: auto; }
-
-.wu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
-}
-.wu-card {
-  background: linear-gradient(180deg, rgba(0,212,255,0.04), rgba(0,212,255,0) 45%), var(--surface);
-  padding: 30px 32px; border: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 14px;
-  transition: background 0.2s, transform 0.2s; position: relative; overflow: hidden;
-}
-.wu-card::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: #00d4ff; transform: scaleY(0); transform-origin: bottom;
-  transition: transform 0.3s ease;
-}
-.wu-card:hover { background: var(--s2); transform: translateY(-2px); }
-.wu-card:hover::before { transform: scaleY(1); }
-
-.wu-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.wu-card__top-meta{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);}
-.wu-date{letter-spacing:1px;text-transform:uppercase;}
-.wu-card__title {
-  font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700;
-  color: var(--bright); line-height: 1.2; transition: color 0.2s;
-}
-.wu-card:hover .wu-card__title { color: #00d4ff; }
-.wu-card__desc {
-  font-size: 13px; color: var(--dim); line-height: 1.7;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-.wu-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.wu-card__footer {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);
-}
-.wu-card__meta { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--mute); }
-.wu-card__arrow { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--mute); transition: all 0.2s; }
-.wu-card:hover .wu-card__arrow { color: #00d4ff; transform: translateX(4px); }
-
-.empty-state {
-  grid-column: 1 / -1; text-align: center;
-  padding: 80px 40px; border: 1px solid var(--border); background: var(--surface);
-}
-
-/* Vue TransitionGroup animations */
-.card-grid-move,
-.card-grid-enter-active,
-.card-grid-leave-active { transition: all 0.4s ease; }
-.card-grid-enter-from { opacity: 0; transform: translateY(20px) scale(0.97); }
-.card-grid-leave-to   { opacity: 0; transform: scale(0.95); }
-.card-grid-leave-active { position: absolute; }
-
-@media (max-width: 900px) {
-  .wu-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-  .wu-card { padding: 26px 28px; }
-}
-@media (max-width: 640px) {
-  .wu-grid { grid-template-columns: 1fr; }
-  .wu-card { padding: 22px 20px; }
-  .wu-toolbar { gap: 12px; padding: 10px 12px; }
-  .result-count { width: 100%; }
-  .filters { gap: 8px; }
-  .wu-card__title { font-size: 17px; }
-  .wu-card__desc { font-size: 12px; }
-}
-@media (max-width: 480px) {
-  .wu-card { padding: 20px 18px; }
-  .wu-card__title { font-size: 16px; }
-  .wu-card__meta { font-size: 9px; }
-}
-</style>

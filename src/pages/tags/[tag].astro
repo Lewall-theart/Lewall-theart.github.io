@@ -2,43 +2,56 @@
 import Base from '../../layouts/Base.astro'
 import WriteupFilter from '../../components/WriteupFilter.vue'
 import { publishedWriteups } from '../../data/writeups'
+
 export async function getStaticPaths() {
   const tags = new Set<string>()
-  publishedWriteups.forEach(w=>[...w.tags, w.category].forEach((t:string)=>tags.add(t.toLowerCase())))
-  return [...tags].map(tag=>({params:{tag},props:{tag}}))
+  publishedWriteups.forEach((w) =>
+    [...w.tags, w.category].forEach((t: string) => tags.add(t.toLowerCase()))
+  )
+  return [...tags].map((tag) => ({ params: { tag }, props: { tag } }))
 }
-const {tag} = Astro.props
-const filtered = publishedWriteups.filter(w=>
-  w.tags.some((t:string)=>t.toLowerCase()===tag) ||
-  w.category.toLowerCase()===tag
-).sort((a,b)=>b.date.getTime()-a.date.getTime())
-const items = filtered.map(w=>({
-  slug:w.slug,title:w.title,description:w.description,
-  category:w.category,catColor:w.catColor??'cyan',
-  difficulty:w.difficulty,tags:w.tags,
-  date:w.date.toISOString(),event:w.event,readTime:w.readTime
+
+const { tag } = Astro.props
+
+const filtered = publishedWriteups
+  .filter(
+    (w) =>
+      w.tags.some((t: string) => t.toLowerCase() === tag) ||
+      w.category.toLowerCase() === tag
+  )
+  .sort((a, b) => b.date.getTime() - a.date.getTime())
+
+const items = filtered.map((w) => ({
+  slug: w.slug,
+  title: w.title,
+  description: w.description,
+  category: w.category,
+  catColor: w.catColor ?? 'cyan',
+  difficulty: w.difficulty,
+  tags: w.tags,
+  date: w.date.toISOString(),
+  event: w.event,
+  readTime: w.readTime,
 }))
 ---
-<Base title={`Tag: ${tag}`}>
-  <div class="pt-28 pb-20">
-    <div class="container">
-      <header class="border-b border-border pb-14 mb-14">
-        <div class="label">// tag</div>
-        <h1 class="page-title"><span class="tag-prefix">#</span>{tag}</h1>
-        <p class="page-desc">{filtered.length} writeup{filtered.length!==1?'s':''} với tag này</p>
-        <a href="/tags" class="back-link">← All Tags</a>
-      </header>
-      <WriteupFilter client:load items={items} />
+
+<Base title={`Tag: #${tag}`}>
+  <div class="max-w-5xl mx-auto rise-in">
+    <div class="mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+      <a
+        href="/tags"
+        class="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors mb-4 no-underline"
+      >
+        ← All tags
+      </a>
+      <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-2">
+        Tag: <span class="text-cyan-600 dark:text-cyan-400">#{tag}</span>
+      </h1>
+      <p class="text-neutral-600 dark:text-neutral-300 text-sm">
+        Found {filtered.length} writeup{filtered.length !== 1 ? 's' : ''} tagged with "{tag}".
+      </p>
     </div>
+
+    <WriteupFilter client:load items={items} />
   </div>
 </Base>
-<style>
-.container{max-width:var(--page-max);margin:0 auto;padding:0 var(--page-pad);}
-.label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
-.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(40px,7vw,72px);letter-spacing:-3px;color:var(--bright);margin-bottom:12px;}
-.tag-prefix{color:var(--azki-violet);}
-.page-desc{font-size:14px;color:var(--dim);max-width:480px;margin-bottom:16px;}
-.back-link{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);padding:6px 14px;display:inline-flex;transition:all .2s;}
-.back-link:hover{border-color:var(--cyan);color:var(--cyan);}
-@media(max-width:600px){.container{padding:0 var(--page-pad-sm);}}
-</style>

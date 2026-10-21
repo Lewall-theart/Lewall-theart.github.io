@@ -1,182 +1,158 @@
 ---
 import Base from '../layouts/Base.astro'
 import { publishedWriteups } from '../data/writeups'
-import HeroTerminal from '../components/HeroTerminal.vue'
-import CountUp from '../components/CountUp.vue'
-import CategoryBars from '../components/CategoryBars.vue'
-import NowPlaying from '../components/NowPlaying.vue'
+import { siteConfig } from '../data/site.config'
+import TechHeroCanvas from '../components/TechHeroCanvas.vue'
+import AnimeHeroText from '../components/AnimeHeroText.vue'
+
 const all = publishedWriteups
-const recent = [...all].sort((a,b)=>b.date.getTime()-a.date.getTime()).slice(0,5)
-const featured = all.find(w=>w.featured) ?? recent[0]
-const allTags = [...new Set(all.flatMap(w=>w.tags))].slice(0,12)
+const sorted = [...all].sort((a, b) => b.date.getTime() - a.date.getTime())
+const recent = sorted.slice(0, 6)
+const allTags = [...new Set(all.flatMap((w) => w.tags))].slice(0, 14)
+const categories = [...new Set(all.map((w) => w.category))]
 ---
-<Base title="Home">
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-glow"></div>
-    <div class="hero-bracket tl"></div>
-    <div class="hero-bracket br"></div>
-    <div class="container hero-inner">
-      <div class="hero-badge">
-        <div class="hero-dot"></div>
-        <span>CTF Writeups &amp; Notes</span>
-      </div>
-      <h1 class="hero-title">
-        BREAK.<br>
-        <span class="hero-cyan">ANALYZE.</span><br>
-        <span class="hero-sub">Document.</span>
-      </h1>
-      <p class="hero-desc">
-        Tài liệu hóa hành trình giải CTF — từ RSA bị gãy, SQL injection lách luật,
-        đến reverse engineering không có mercy. Có cả nhạc AZKi để code cho đỡ buồn.
-      </p>
-      <div class="hero-actions">
-        <a href="/writeups" class="btn-primary">⬡ Xem Writeups</a>
-        <a href="/about" class="btn-ghost">◎ About</a>
-      </div>
-      <!-- AZKi NowPlaying widget -->
-      <div class="hero-np">
-        <NowPlaying client:load />
-      </div>
-    </div>
-  </section>
 
-  <div class="container">
-    <!-- STATS -->
-    <div class="stats-row">
-      <CountUp client:visible target={all.length} label="Writeups" />
-      <CountUp client:visible target={6} label="Categories" />
-      <CountUp client:visible target={18} label="CTF Events" />
-      <CountUp client:visible target={7} label="1st Bloods" />
-    </div>
+<Base title={siteConfig.home.pageTitle}>
+  <div class="max-w-5xl mx-auto">
+    <!-- Hero Section with Three.js & Anime.js -->
+    <section class="mb-14 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-center border-b border-neutral-200 dark:border-neutral-800 pb-12">
+      <div>
+        <AnimeHeroText
+          client:load
+          badge={siteConfig.home.badgeText}
+          title={siteConfig.home.title}
+          subtitle={siteConfig.home.subtitle}
+        />
 
-    <!-- FEATURED -->
-    <div class="section-label"><span class="sl-text">// featured writeup</span><div class="sl-line"></div></div>
-    {featured && (
-      <div class="featured">
-        <div class="featured-top"></div>
-        <a href={`/writeups/${featured.slug}`} class="featured-content">
-          <div class="featured-tags">
-            <span class={`tag tag-${featured.catColor??'cyan'}`}>{featured.category}</span>
-            {featured.tags.slice(0,2).map((t:string)=><span class="tag tag-orange">{t}</span>)}
-            {featured.featured && <span class="tag tag-green">FEATURED</span>}
+        <!-- Status & Stats Pills -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/80 dark:bg-neutral-900/60 px-3.5 py-1 text-xs font-mono text-neutral-600 dark:text-neutral-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Status: Active &amp; Up to date</span>
           </div>
-          <h2 class="featured-title">{featured.title}</h2>
-          <p class="featured-desc">{featured.description}</p>
-          <div class="featured-meta">
-            <div class={`diff diff-${featured.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
-            <span class="capitalize">{featured.difficulty}</span>
-            <span>·</span><span>{featured.event??'CTF 2024'}</span>
-            <span>·</span><span>{featured.readTime??8} min read</span>
+
+          <div class="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/80 dark:bg-neutral-900/60 px-3.5 py-1 text-xs font-mono text-neutral-600 dark:text-neutral-300">
+            <span class="text-neutral-400 font-semibold">{all.length}</span>
+            <span>Writeups</span>
           </div>
+
+          <div class="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/80 dark:bg-neutral-900/60 px-3.5 py-1 text-xs font-mono text-neutral-600 dark:text-neutral-300">
+            <span class="text-neutral-400 font-semibold">{categories.length}</span>
+            <span>Categories</span>
+          </div>
+        </div>
+
+        <!-- Quick CTF Actions -->
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            href="/writeups"
+            class="px-5 py-2.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-mono tracking-wider uppercase font-semibold hover:opacity-90 transition-opacity no-underline"
+          >
+            Explore Writeups →
+          </a>
+          <a
+            href="/achievement"
+            class="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-mono tracking-wider uppercase hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors no-underline"
+          >
+            Achievements
+          </a>
+        </div>
+      </div>
+
+      <!-- Three.js 3D Interactive Cyber Core -->
+      <div class="hidden lg:flex items-center justify-center">
+        <TechHeroCanvas client:load />
+      </div>
+    </section>
+
+    <!-- Popular Tags Bar -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          <span class="h-px w-5 bg-neutral-400 dark:bg-neutral-600"></span>
+          <span>Topics &amp; Tags</span>
+        </div>
+        <a href="/tags" class="text-xs font-mono text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+          All tags ({allTags.length}) →
         </a>
-        <HeroTerminal client:visible slug={featured.slug} flag={featured.flag} />
       </div>
-    )}
+      <div class="flex flex-wrap gap-2">
+        {allTags.map((t) => (
+          <a href={`/tags/${encodeURIComponent(t.toLowerCase())}`} class="tag-pill">
+            {t}
+          </a>
+        ))}
+      </div>
+    </section>
 
-    <!-- TAGS CLOUD -->
-    <div class="section-label mt-16"><span class="sl-text">// popular tags</span><div class="sl-line"></div><a href="/tags" class="btn-ghost btn-sm">All tags →</a></div>
-    <div class="tags-cloud">
-      {allTags.map(tag=>(
-        <a href={`/tags/${tag.toLowerCase()}`} class="tag-pill">{tag}</a>
-      ))}
-    </div>
-
-    <!-- CATEGORIES -->
-    <div class="section-label mt-16"><span class="sl-text">// categories</span><div class="sl-line"></div></div>
-    <CategoryBars client:visible writeups={all.map(w=>({category:w.category}))} />
-
-    <!-- RECENT -->
-    <div class="section-label mt-16 mb-6"><span class="sl-text">// recent writeups</span><div class="sl-line"></div><a href="/writeups" class="btn-ghost btn-sm">View All →</a></div>
-    <div class="recent-list">
-      {recent.map((w,i)=>(
-        <a href={`/writeups/${w.slug}`} class="recent-item">
-          <span class="recent-num">{String(i+1).padStart(2,'0')}</span>
-          <div class="recent-body">
-            <div class="recent-title">{w.title}</div>
-            <div class="recent-meta">
-              <span class={`tag tag-${w.catColor??'cyan'}`} style="font-size:9px">{w.category}</span>
-              <span class="recent-excerpt">{w.description?.slice(0,55)}...</span>
-            </div>
-          </div>
-          <div class="recent-right">
-            <div class={`diff diff-${w.difficulty}`}><div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
-            <span class="recent-date">{w.date.toLocaleDateString('vi-VN',{month:'short',year:'numeric'})}</span>
-          </div>
+    <!-- Recent Writeups (Tech-Blog Card Layout) -->
+    <section class="space-y-8">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          <span class="h-px w-5 bg-neutral-400 dark:bg-neutral-600"></span>
+          <span>Latest Articles</span>
+        </div>
+        <a href="/writeups" class="text-xs font-mono text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+          View all ({all.length}) →
         </a>
-      ))}
-    </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6">
+        {recent.map((w, index) => {
+          const displayDate = w.date.toLocaleDateString(
+            siteConfig.formatting.dateLocale,
+            siteConfig.formatting.dateOptions
+          )
+
+          return (
+            <article
+              class="group relative overflow-hidden rounded-2xl surface-card p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg rise-in"
+              style={`animation-delay: ${100 + index * 70}ms;`}
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center rounded-full border border-neutral-900/80 bg-neutral-900 px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-100 dark:border-neutral-100/80 dark:bg-neutral-100 dark:text-neutral-900">
+                    {w.category}
+                  </span>
+                  <div class={`diff diff-${w.difficulty}`}>
+                    <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
+                  </div>
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-neutral-400">{w.difficulty}</span>
+                </div>
+                <time class="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                  {displayDate}
+                </time>
+              </div>
+
+              <a href={`/writeups/${w.slug}`} class="block no-underline">
+                <h2 class="text-xl sm:text-2xl font-semibold mb-3 text-neutral-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                  {w.title}
+                </h2>
+                <p class="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed mb-4 line-clamp-2">
+                  {w.description}
+                </p>
+              </a>
+
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800/80">
+                <div class="flex flex-wrap gap-1.5">
+                  {w.tags.slice(0, 3).map((t) => (
+                    <span class="text-[10px] font-mono text-neutral-400 px-2 py-0.5 rounded border border-neutral-200 dark:border-neutral-800">
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+
+                <a
+                  href={`/writeups/${w.slug}`}
+                  class="text-neutral-800 dark:text-neutral-200 font-mono text-xs uppercase tracking-widest hover:underline decoration-neutral-400 underline-offset-4 flex items-center gap-1.5"
+                >
+                  <span>{siteConfig.home.readMoreLabel}</span>
+                </a>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </section>
   </div>
 </Base>
-
-<style>
-.container{max-width:var(--page-max);margin:0 auto;padding:0 var(--page-pad);}
-/* Hero */
-.hero{position:relative;padding:160px 0 100px;overflow:hidden;}
-.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse at center,rgba(0,212,255,.06) 0%,transparent 70%);pointer-events:none;}
-.hero-bracket{position:absolute;width:80px;height:80px;}
-.hero-bracket.tl{top:80px;left:40px;border-top:1px solid rgba(0,212,255,.15);border-left:1px solid rgba(0,212,255,.15);}
-.hero-bracket.br{bottom:40px;right:40px;border-bottom:1px solid rgba(0,212,255,.15);border-right:1px solid rgba(0,212,255,.15);}
-.hero-inner{position:relative;z-index:1;}
-.hero-badge{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green);}
-.hero-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:heartbeat 2s infinite;}
-.hero-title{font-family:'Syne',sans-serif;font-weight:800;line-height:.95;letter-spacing:-4px;color:var(--bright);margin-bottom:28px;font-size:clamp(52px,9vw,100px);}
-.hero-cyan{color:var(--cyan);}
-.hero-sub{color:var(--mute);font-weight:400;font-size:.55em;letter-spacing:-2px;}
-.hero-desc{max-width:520px;font-size:15px;color:var(--dim);line-height:1.75;margin-bottom:36px;}
-.hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:36px;}
-.btn-primary{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06);display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
-.btn-primary:hover{background:rgba(0,212,255,.12);box-shadow:0 0 20px rgba(0,212,255,.2);}
-.btn-ghost{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:1px solid var(--b2);color:var(--dim);display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
-.btn-ghost:hover{border-color:var(--dim);color:var(--text);}
-.btn-sm{padding:6px 16px;font-size:10px;}
-.hero-np{max-width:400px;}
-
-/* Stats */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);margin-bottom:80px;}
-@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
-
-/* Section label */
-.section-label{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
-.sl-text{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mute);white-space:nowrap;}
-.sl-line{flex:1;height:1px;background:var(--border);}
-.mt-16{margin-top:64px;}
-.mb-6{margin-bottom:24px;}
-
-/* Tags cloud */
-.tags-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0;}
-.tag-pill{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;padding:6px 14px;border:1px solid var(--border);color:var(--dim);transition:all .2s;background:var(--surface);}
-.tag-pill:hover{border-color:var(--azki-pink);color:var(--azki-pink);background:rgba(255,110,180,.06);}
-
-/* Tags */
-.tag{display:inline-flex;align-items:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border:1px solid;}
-.tag-cyan{color:#00d4ff;border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
-.tag-green{color:#7fff6b;border-color:rgba(127,255,107,.4);background:rgba(127,255,107,.06);}
-.tag-orange{color:#ff6b35;border-color:rgba(255,107,53,.4);background:rgba(255,107,53,.06);}
-
-/* Featured */
-.featured{display:grid;grid-template-columns:1fr 300px;border:1px solid var(--border);margin-bottom:0;position:relative;overflow:hidden;}
-.featured-top{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--azki-pink),var(--green));z-index:1;}
-.featured-content{padding:40px;background:var(--surface);display:flex;flex-direction:column;gap:20px;transition:background .2s;}
-.featured-content:hover{background:var(--s2);}
-.featured-tags{display:flex;gap:8px;flex-wrap:wrap;}
-.featured-title{font-family:'Syne',sans-serif;font-weight:800;color:var(--bright);font-size:clamp(22px,3vw,34px);letter-spacing:-1px;line-height:1.15;transition:color .2s;}
-.featured-content:hover .featured-title{color:var(--cyan);}
-.featured-desc{font-size:14px;color:var(--dim);line-height:1.7;}
-.featured-meta{display:flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
-@media(max-width:768px){.featured{grid-template-columns:1fr;}}
-
-/* Recent */
-.recent-list{border:1px solid var(--border);}
-.recent-item{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:20px;padding:16px 24px;border-bottom:1px solid var(--border);transition:background .2s;}
-.recent-item:last-child{border-bottom:none;}
-.recent-item:hover{background:var(--surface);}
-.recent-num{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);text-align:right;}
-.recent-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:15px;transition:color .2s;margin-bottom:4px;}
-.recent-item:hover .recent-title{color:var(--cyan);}
-.recent-meta{display:flex;align-items:center;gap:8px;}
-.recent-excerpt{font-size:12px;color:var(--mute);}
-.recent-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
-.recent-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);}
-@media(max-width:600px){.recent-right{display:none;}.container{padding:0 var(--page-pad-sm);}}
-</style>

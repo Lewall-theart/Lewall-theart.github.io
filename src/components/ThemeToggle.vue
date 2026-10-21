@@ -1,28 +1,71 @@
 <template>
-  <button class="tt" :class="{light:isLight}" @click="toggle" :title="isLight?'Dark mode':'Light mode'">
-    <span>{{ isLight ? '☀️' : '🌙' }}</span>
-    <span class="track"><span class="thumb"></span></span>
+  <button
+    @click="toggle"
+    :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    class="p-2 rounded-lg border border-transparent hover:border-neutral-300 hover:bg-neutral-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 transition-colors text-neutral-600 dark:text-neutral-300"
+  >
+    <svg
+      v-if="isDark"
+      viewBox="0 0 24 24"
+      class="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
+    </svg>
+    <svg
+      v-else
+      viewBox="0 0 24 24"
+      class="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12.5A8.5 8.5 0 0 1 11.5 3.1a7 7 0 1 0 9.5 9.4z" />
+    </svg>
   </button>
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-const isLight = ref(false)
-function toggle() {
-  isLight.value = !isLight.value
-  document.documentElement.setAttribute('data-theme', isLight.value ? 'light' : '')
-  localStorage.setItem('theme', isLight.value ? 'light' : 'dark')
+
+const isDark = ref(true)
+
+function syncState() {
+  isDark.value = document.documentElement.classList.contains('dark')
 }
+
+function toggle() {
+  if (isDark.value) {
+    document.documentElement.classList.remove('dark')
+    document.documentElement.setAttribute('data-theme', 'light')
+    localStorage.setItem('theme', 'light')
+  } else {
+    document.documentElement.classList.add('dark')
+    document.documentElement.setAttribute('data-theme', 'dark')
+    localStorage.setItem('theme', 'dark')
+  }
+  syncState()
+}
+
 onMounted(() => {
-  const s = localStorage.getItem('theme')
-  isLight.value = s === 'light'
-  if (isLight.value) document.documentElement.setAttribute('data-theme', 'light')
+  const stored = localStorage.getItem('theme')
+  if (stored === 'light') {
+    document.documentElement.classList.remove('dark')
+    document.documentElement.setAttribute('data-theme', 'light')
+  } else {
+    document.documentElement.classList.add('dark')
+    document.documentElement.setAttribute('data-theme', 'dark')
+  }
+  syncState()
 })
 </script>
-<style scoped>
-.tt{display:flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid var(--border);background:var(--surface);transition:border-color .2s;font-size:13px;}
-.tt:hover{border-color:var(--azki-pink);}
-.track{width:28px;height:14px;background:var(--b2);border-radius:7px;position:relative;transition:background .3s;}
-.tt.light .track{background:linear-gradient(90deg,var(--azki-violet),var(--azki-pink));}
-.thumb{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--dim);transition:transform .3s,background .3s;}
-.tt.light .thumb{transform:translateX(14px);background:#fff;}
-</style>

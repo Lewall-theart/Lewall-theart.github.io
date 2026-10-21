@@ -2,60 +2,30 @@ import { defineConfig, presetUno, presetTypography } from 'unocss'
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetUno({
+      dark: 'class',
+    }),
     presetTypography(),
   ],
 
   theme: {
-    colors: {
-      bg:      '#080c10',
-      surface: '#0d1117',
-      s2:      '#141b23',
-      s3:      '#1c2433',
-      border:  '#1e2d3d',
-      b2:      '#263547',
-
-      cyan:    '#00d4ff',
-      orange:  '#ff6b35',
-      green:   '#7fff6b',
-      gold:    '#ffd700',
-      red:     '#ff4757',
-      purple:  '#bd93f9',
-
-      text:    '#d7dde6',
-      dim:     '#a2acb9',
-      mute:    '#7c8796',
-      bright:  '#f3f6fa',
-    },
     fontFamily: {
-      display: ['Syne', 'sans-serif'],
-      mono:    ['"Space Mono"', 'monospace'],
-      body:    ['"IBM Plex Mono"', 'monospace'],
+      mono: ['"JetBrains Mono"', 'monospace'],
+      sans: ['"JetBrains Mono"', 'sans-serif'],
+      display: ['"Syne"', '"JetBrains Mono"', 'sans-serif'],
+    },
+    colors: {
+      surface: 'var(--card)',
+      panel: 'var(--card-2)',
+      brandBg: 'var(--bg)',
+      brandFg: 'var(--fg)',
+      brandBorder: 'var(--border)',
+      brandMuted: 'var(--muted)',
     },
   },
 
   shortcuts: {
-    // Tags / badges
-    'tag':        'inline-flex items-center gap-1 font-mono text-[10px] tracking-[1.5px] uppercase px-[10px] py-[3px] border',
-    'tag-cyan':   'tag text-cyan border-cyan/40 bg-cyan/6',
-    'tag-green':  'tag text-green border-green/40 bg-green/6',
-    'tag-orange': 'tag text-orange border-orange/40 bg-orange/6',
-    'tag-red':    'tag text-red border-red/40 bg-red/6',
-    'tag-purple': 'tag text-purple border-purple/40 bg-purple/6',
-    'tag-gold':   'tag text-gold border-gold/40 bg-gold/6',
-
-    // Buttons
-    'btn':        'font-mono text-[11px] tracking-[2px] uppercase px-7 py-3 border inline-flex items-center gap-2 transition-all duration-200 relative overflow-hidden',
-    'btn-primary':'btn border-cyan text-cyan hover:shadow-[0_0_20px_rgba(0,212,255,0.3)]',
-    'btn-ghost':  'btn border-b2 text-dim hover:border-dim hover:text-text',
-
-    // Layout
-    'container': 'max-w-[var(--page-max)] mx-auto px-10',
-    'container-narrow': 'max-w-[var(--page-narrow)] mx-auto px-10',
-
-    // Section label
-    'section-label': 'flex items-center gap-4 mb-9',
-    'section-label-text': 'font-mono text-[10px] tracking-[3px] uppercase text-mute whitespace-nowrap',
-    'section-label-line': 'flex-1 h-px bg-border',
+    'nav-link-base': 'relative text-xs uppercase tracking-widest font-mono text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors duration-200',
+    'badge-pill': 'inline-flex items-center gap-3 rounded-full border border-neutral-300/70 dark:border-neutral-700 bg-neutral-100/70 dark:bg-neutral-900/40 px-4 py-1 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400',
   },
 })

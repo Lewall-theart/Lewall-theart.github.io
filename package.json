@@ -10,11 +10,15 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.0",
     "@astrojs/vue": "^4.0.0",
+    "animejs": "^4.5.0",
     "astro": "^4.0.0",
     "motion": "^10.18.0",
+    "three": "^0.186.1",
     "vue": "^3.4.0"
   },
   "devDependencies": {
+    "@types/animejs": "^3.1.13",
+    "@types/three": "^0.186.0",
     "@unocss/astro": "^0.58.0",
     "@unocss/reset": "^0.58.0",
     "unocss": "^0.58.0"

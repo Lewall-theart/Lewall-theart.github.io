@@ -1,15 +1,16 @@
 ---
 import Base from './Base.astro'
-import FlagReveal from '../components/FlagReveal.vue'
 import TableOfContents from '../components/TableOfContents.vue'
+import FlagReveal from '../components/FlagReveal.vue'
+import { siteConfig } from '../data/site.config'
 
 interface Props {
   title: string
   description: string
   date: Date | string
   category: string
-  catColor?: 'cyan' | 'green' | 'orange' | 'red' | 'purple' | 'gold'
-  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'insane'
+  catColor?: string
+  difficulty: string
   tags: string[]
   event?: string
   readTime?: number
@@ -24,194 +25,191 @@ const {
   description,
   date,
   category,
-  catColor = 'cyan',
   difficulty,
-  tags,
+  tags = [],
   event,
-  readTime,
+  readTime = 8,
   flag,
   headings = [],
   prev,
   next,
 } = Astro.props
 
-const displayDate = (date instanceof Date ? date : new Date(date))
-  .toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })
-const tocHeadings = headings.map(h => ({ id: h.slug ?? h.id ?? '', text: h.text, depth: h.depth }))
+const formattedDate = (date instanceof Date ? date : new Date(date)).toLocaleDateString(
+  siteConfig.formatting.dateLocale,
+  siteConfig.formatting.dateOptions
+)
+
+const tocHeadings = headings.map((h) => ({
+  id: h.slug ?? h.id ?? '',
+  text: h.text,
+  depth: h.depth,
+}))
+
+const headingCount = headings.length
 ---
 
-<Base
-  title={title}
-  description={description}
-  showProgress={true}
-  type="article"
-  publishedTime={date}
-  modifiedTime={date}
-  tags={tags}
-  section={category}
->
-  <article class="wu">
-    <!-- HERO -->
-    <header class="wu-hero">
-      <div class="wu-hero__line"></div>
-      <div class="wu-hero__glow"></div>
-      <div class="wu-shell">
-        <div class="breadcrumb">
-          <a href="/">Home</a><span>›</span>
-          <a href="/writeups">Writeups</a><span>›</span>
-          <span>{title}</span>
-        </div>
-        <div class="wu-hero__grid">
-          <div class="wu-hero__main">
-            <div class="wu-tags">
-              <span class={`tag tag-${catColor}`}>{category}</span>
-            </div>
-            <h1 class="wu-title">{title}</h1>
-            <p class="wu-desc">{description}</p>
+<Base title={title} description={description} type="article" publishedTime={date} tags={tags}>
+  <div class="max-w-5xl mx-auto">
+    <!-- Back Navigation -->
+    <div class="mb-8 rise-in">
+      <a
+        href="/writeups"
+        class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        {siteConfig.post.backToHomeLabel}
+      </a>
+    </div>
+
+    <!-- Article Header -->
+    <header class="mb-10 rise-in" style="animation-delay: 40ms;">
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="inline-flex items-center rounded-full border border-neutral-900/80 bg-neutral-900 px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-100 dark:border-neutral-100/80 dark:bg-neutral-100 dark:text-neutral-900">
+          {category}
+        </span>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-300/70 dark:border-neutral-700 text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          <div class={`diff diff-${difficulty}`}>
+            <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
           </div>
-          <aside class="wu-hero__card">
-            <div class="meta-head">
-              <span class="meta-kicker">// writeup info</span>
-              <span class="meta-date">{displayDate}</span>
-            </div>
-            <div class="meta-list">
-              {event && (
-                <div class="meta-row">
-                  <span class="meta-label">Event</span>
-                  <span class="meta-value">{event}</span>
-                </div>
-              )}
-              {readTime && (
-                <div class="meta-row">
-                  <span class="meta-label">Read</span>
-                  <span class="meta-value">{readTime} min</span>
-                </div>
-              )}
-              <div class="meta-row">
-                <span class="meta-label">Difficulty</span>
-                <span class="meta-value">
-                  <span class={`diff diff-${difficulty}`}>
-                    <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
-                  </span>
-                  <span class="cap">{difficulty}</span>
-                </span>
-              </div>
-              {tags.length > 0 && (
-                <div class="meta-row meta-tags">
-                  <span class="meta-label">Tags</span>
-                  <div class="meta-tags__list">
-                    {tags.map((t:string)=><span class="tag tag-orange">{t}</span>)}
-                  </div>
-                </div>
-              )}
-            </div>
-          </aside>
+          <span>{difficulty}</span>
+        </div>
+        {tags.map((t) => (
+          <a
+            href={`/tags/${encodeURIComponent(t.toLowerCase())}`}
+            class="tag-pill"
+          >
+            {t}
+          </a>
+        ))}
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+        {title}
+      </h1>
+
+      <p class="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-3xl">
+        {description}
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-4 py-4 border-y border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+        <div class="flex items-center gap-4">
+          <time datetime={date.toString()}>{formattedDate}</time>
+          {event && <span>· {event}</span>}
+          <span>· {readTime} min read</span>
+        </div>
+
+        <!-- Share Actions -->
+        <div class="flex items-center gap-3">
+          <button
+            id="copy-btn"
+            class="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest hover:text-neutral-900 dark:hover:text-white transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+            <span id="copy-label">Copy Link</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Article Stats Banner -->
+      <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="surface-card rounded-xl p-3.5 text-center">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Read Time</div>
+          <div class="text-lg font-semibold mt-1 font-mono">{readTime} min</div>
+        </div>
+        <div class="surface-card rounded-xl p-3.5 text-center">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</div>
+          <div class="text-lg font-semibold mt-1 font-mono">{category}</div>
+        </div>
+        <div class="surface-card rounded-xl p-3.5 text-center">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Headings</div>
+          <div class="text-lg font-semibold mt-1 font-mono">{headingCount}</div>
+        </div>
+        <div class="surface-card rounded-xl p-3.5 text-center">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Difficulty</div>
+          <div class="text-lg font-semibold mt-1 font-mono capitalize">{difficulty}</div>
         </div>
       </div>
     </header>
 
-    <!-- BODY -->
-    <section class="wu-main">
-      <div class="wu-main__content">
-        <div class="prose">
-          <slot />
+    <!-- Main Content & Table of Contents Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_260px] gap-10 items-start">
+      <div class="min-w-0">
+        <div class="surface-panel rounded-2xl p-6 sm:p-10">
+          <div class="prose max-w-none">
+            <slot />
+          </div>
+
+          <!-- CTF Flag Reveal Component -->
+          {flag && (
+            <div class="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+              <FlagReveal client:visible flag={flag} />
+            </div>
+          )}
         </div>
-        {flag && (
-          <div class="mt-16"><FlagReveal client:visible flag={flag} /></div>
-        )}
-        <!-- PREV / NEXT -->
-        <div class="prevnext">
+
+        <!-- Prev / Next Navigation -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
           {prev ? (
-            <a href={`/writeups/${prev.slug}`} class="pn-card pn-prev">
-              <div class="pn-label">← PREV</div>
-              <div class="pn-title">{prev.title}</div>
+            <a
+              href={`/writeups/${prev.slug}`}
+              class="surface-card rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block"
+            >
+              <div class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1">
+                ← Previous
+              </div>
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1">
+                {prev.title}
+              </div>
             </a>
-          ) : <div/>}
+          ) : <div />}
+
           {next ? (
-            <a href={`/writeups/${next.slug}`} class="pn-card pn-next">
-              <div class="pn-label">NEXT →</div>
-              <div class="pn-title">{next.title}</div>
+            <a
+              href={`/writeups/${next.slug}`}
+              class="surface-card rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block sm:text-right"
+            >
+              <div class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1">
+                Next →
+              </div>
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1">
+                {next.title}
+              </div>
             </a>
-          ) : <div/>}
+          ) : <div />}
         </div>
       </div>
-      <aside class="wu-main__aside">
+
+      <!-- Sticky Table of Contents Sidebar -->
+      <aside class="hidden xl:block">
         <TableOfContents client:load headings={tocHeadings} />
       </aside>
-    </section>
-  </article>
+    </div>
+  </div>
 </Base>
 
-<style>
-.wu-shell{max-width:1320px;margin:0 auto;padding:0 var(--page-pad);}
-.tag{display:inline-flex;align-items:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border:1px solid;}
-.tag-cyan{color:#00d4ff;border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);}
-.tag-orange{color:#ff6b35;border-color:rgba(255,107,53,.4);background:rgba(255,107,53,.06);}
-.tag-green{color:#7fff6b;border-color:rgba(127,255,107,.4);background:rgba(127,255,107,.06);}
+<script>
+  function setupCopy() {
+    const btn = document.getElementById('copy-btn')
+    const label = document.getElementById('copy-label')
+    if (!btn || !label) return
 
-/* Hero */
-.wu-hero{padding:140px 0 72px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
-.wu-hero__line{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.35),var(--azki-pink),transparent);}
-.wu-hero__glow{position:absolute;right:-120px;top:-120px;width:360px;height:360px;background:radial-gradient(circle at center,rgba(0,212,255,.12) 0%,transparent 70%);pointer-events:none;}
-.breadcrumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);margin-bottom:22px;}
-.breadcrumb a:hover{color:var(--cyan);}
-.wu-hero__grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:48px;align-items:end;}
-.wu-hero__main{max-width:720px;}
-.wu-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.wu-title{font-family:'Syne',sans-serif;font-weight:800;color:var(--bright);font-size:clamp(34px,5.5vw,64px);letter-spacing:-2px;line-height:1.05;margin-bottom:18px;}
-.wu-desc{font-size:15px;color:var(--dim);line-height:1.8;margin-bottom:10px;max-width:640px;}
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        label.textContent = 'Copied!'
+        setTimeout(() => {
+          label.textContent = 'Copy Link'
+        }, 2000)
+      } catch (e) {}
+    })
+  }
 
-.wu-hero__card{position:relative;border:1px solid var(--border);background:var(--surface);padding:22px;}
-.wu-hero__card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--azki-pink),var(--azki-violet));}
-.meta-head{display:flex;align-items:center;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
-.meta-date{color:var(--text);letter-spacing:1px;}
-.meta-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px dashed var(--border);}
-.meta-row:first-of-type{border-top:none;}
-.meta-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mute);}
-.meta-value{font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;text-align:right;}
-.meta-tags{align-items:flex-start;}
-.meta-tags__list{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
-.meta-tags__list .tag{font-size:9px;padding:2px 6px;}
-.cap{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);text-transform:capitalize;}
-
-/* Body */
-.wu-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:48px;max-width:1320px;margin:0 auto;padding:0 var(--page-pad) 100px;align-items:start;}
-.wu-main__content{min-width:0;max-width:920px;}
-.wu-main__content .prose{font-size:16px;line-height:1.9;}
-.wu-main__content .prose code{font-size:.9em;}
-
-/* mt-16 */
-.mt-16{margin-top:64px;}
-
-/* Prev/Next */
-.prevnext{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:72px;}
-.pn-card{border:1px solid var(--border);background:var(--surface);padding:24px;transition:background .2s,border-color .2s;}
-.pn-card:hover{background:var(--s2);border-color:var(--b2);}
-.pn-next{text-align:right;}
-.pn-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--mute);margin-bottom:8px;}
-.pn-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--bright);font-size:15px;transition:color .2s;}
-.pn-card:hover .pn-title{color:var(--cyan);}
-
-@media(max-width:1100px){
-  .wu-shell{padding:0 var(--page-pad-sm);}
-  .wu-hero{padding:120px 0 64px;}
-  .wu-hero__grid{grid-template-columns:1fr;gap:24px;}
-  .wu-hero__card{max-width:560px;}
-  .wu-main{grid-template-columns:1fr;gap:24px;padding:0 var(--page-pad-sm) 88px;}
-  .wu-main__aside{display:none;}
-  .wu-main__content{max-width:100%;}
-}
-@media(max-width:768px){
-  .wu-hero{padding:104px 0 56px;}
-  .wu-title{font-size:clamp(30px,8vw,48px);}
-  .wu-desc{font-size:14px;max-width:100%;}
-  .wu-main__content .prose{font-size:15px;line-height:1.85;}
-}
-@media(max-width:600px){
-  .wu-hero{padding:92px 0 48px;}
-  .prevnext{grid-template-columns:1fr;}
-  .pn-next{text-align:left;}
-  .pn-card{padding:20px;}
-  .wu-main__content .prose{font-size:14px;line-height:1.8;}
-}
-</style>
+  setupCopy()
+  document.addEventListener('astro:page-load', setupCopy)
+</script>
