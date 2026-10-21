@@ -59,7 +59,7 @@ flowchart TD
         S6["Mảnh 6 (S6)<br/>Dùng bộ 5 chìa khóa mở bức ảnh động GIF bị mã hóa<br/>→ Soi kính lúp ở Frame 29 để đọc S6"]
     end
 
-    FINALE["HOÀN TẤT THỬ THÁCH (FLAG)<br/>Ghép đủ 6 mảnh: DF26{S1_S2_S3_S4_S5_S6}"]
+    FINALE["HOÀN TẤT THỬ THÁCH (FLAG)<br/>Ghép đủ 6 mảnh"]
 
     START --> S1
     START --> S2
@@ -150,6 +150,11 @@ flowchart TD
    print(f"[+] S2 = {s2}")  # cc3cec7b19bc6381
    ```
 
+4. **Tại sao lại code như thế này?**
+   - **Tại sao dùng thư viện `pefile`?** File `ntdll.dll` là tệp nhị phân có cấu trúc PE (Portable Executable) phức tạp. Thư viện `pefile` giúp ta phân tích thẳng bảng xuất danh bạ (`DIRECTORY_ENTRY_EXPORT`) và ánh xạ địa chỉ bộ nhớ (RVA) mà không phải tự viết code đọc từng byte header nhị phân thủ công.
+   - **Tại sao kiểm tra 4 byte `\x4C\x8B\xD1\xB8`?** Trên Windows x64, các hàm gọi trực tiếp vào nhân hệ điều hành (Syscall) đều có đoạn mào đầu (prologue) đặc trưng: lệnh `mov r10, rcx` (mã máy 3 byte `4C 8B D1` dùng để lưu trữ tham số đầu vào cho CPU) và tiếp theo là `mov eax, <imm>` (opcode `B8` nạp số hiệu syscall). Việc kiểm tra 4 byte này giúp bộ lọc loại trừ các hàm tiện ích thông thường hoặc các hàm đã bị phần mềm diệt virus (EDR/AV) can thiệp hook, chỉ giữ lại đúng các hàm syscall nguyên bản.
+   - **Tại sao bắt buộc phải `sort()` trước khi băm SHA-256?** Trong mã giả IDA Pro, chương trình gom danh sách hàm và gọi thuật toán sắp xếp từ điển A-Z trước khi nối bằng ký tự `\n`. Hàm băm SHA-256 có hiệu ứng tuyết lở (avalanche effect): chỉ cần thứ tự của hai hàm bị đảo nhau, toàn bộ chuỗi băm 64 ký tự sẽ bị biến đổi hoàn toàn sang một giá trị khác.
+
 ---
 
 ### Giai đoạn 3: Khôi phục mảnh S3 và S4
@@ -192,6 +197,11 @@ flowchart TD
    s3 = tx_hash_2[2:18]
    print(f"[+] S3 = {s3}")  # ab51ba2f81be8cb8
    ```
+
+3. **Tại sao lại code như thế này?**
+   - **Tại sao tự viết hàm `rc4_crypt`?** Thuật toán RC4 (Rivest Cipher 4) là thuật toán mã hóa dòng kinh điển, gồm 2 pha: khởi tạo mảng hoán vị 256 phần tử và sinh dòng khóa giả ngẫu nhiên để XOR với dữ liệu. Việc tự triển khai hàm ngắn gọn giúp script chạy độc lập ở mọi môi trường mà không cần cài đặt thêm các thư viện mật mã bên ngoài như `pycryptodome`.
+   - **Tại sao cắt `k_dotnet[:16]` lấy $S_4$?** Biến `g_k_dotnet` trích xuất từ bảng ký hiệu của tệp COFF nhúng dài 32 byte hex (64 ký tự). Theo quy tắc của đề bài, mỗi mảnh ghép cờ có độ dài chuẩn 16 ký tự hex, nên ta cắt chuỗi con đầu tiên `[:16]` làm mảnh $S_4$.
+   - **Tại sao lại dùng chính `k_dotnet` làm khóa giải mã $S_3$?** Phân tích luồng gọi hàm tại vị trí `unk_1400328DC`, con trỏ tham số khóa truyền vào hàm giải mã RC4 trỏ thẳng tới vùng nhớ chứa chuỗi `g_k_dotnet`. Đây là kỹ thuật chuỗi khóa (Key Chaining): dữ liệu giải mã ở bước trước đóng vai trò là chìa khóa mở tiếp tầng dữ liệu kế tiếp.
 
 ---
 
@@ -240,6 +250,10 @@ flowchart TD
    print(f"[+] S5 = {s5}")  # Output: 724bb67f13c6aee8
    ```
 
+3. **Tại sao lại code như thế này?**
+   - **Tại sao dùng `hmac.new(..., hashlib.sha256)`?** Trong mã nguồn C# dịch ngược từ dnSpy của class `CtfPayload.llll`, hàm `IIII` khởi tạo đối tượng `new HMACSHA256(keyBytes)`. HMAC là cơ chế xác thực thông điệp kết hợp giữa hàm băm và một khóa bí mật. Ta dùng module `hmac` chuẩn của Python để tái lập kết quả toán học chính xác 100% như khi chạy bằng .NET runtime của Windows mà không cần cài đặt môi trường .NET SDK nặng nề.
+   - **Tại sao lại ghép chuỗi `s1 + s2 + s3 + s4`?** Thuật toán trong module .NET nối 4 chuỗi này làm dữ liệu đầu vào (Message), còn 32 ký tự đầu của `k_dotnet` làm khóa bí mật (Secret Key). Điều này giải thích tại sao Giai đoạn 4 là điểm hội tụ bắt buộc: thiếu bất kỳ mảnh nào trong 4 mảnh đầu thì không thể tính ra $S_5$.
+
 ---
 
 ### Giai đoạn 5: Khôi phục mảnh S6
@@ -272,6 +286,10 @@ flowchart TD
    s6 = "4519aff2332e8dd3"
    print(f"[+] S6 = {s6}")  # Output: 4519aff2332e8dd3
    ```
+
+3. **Tại sao lại code như thế này?**
+   - **Tại sao dùng thư viện `PIL.ImageSequence` để bóc tách frame GIF?** Tác giả áp dụng kỹ thuật Visual Steganography (giấu tin thị giác). File ảnh động GIF gồm 30 khung hình chuyển động liên tục với tần số cao, mắt người chỉ nhìn thấy ảnh chớp nhoáng hoặc màn hình nhiễu. Bằng cách dùng thư viện `PIL` duyệt qua từng khung hình tĩnh và lưu thành các file `frame_*.png` riêng rẽ, ta có thể "đóng băng" thời gian để kiểm tra từng khung hình một cách chi tiết.
+   - **Tại sao lại là khung hình số 29?** Từ frame 0 đến frame 28 là các bức ảnh nhiễu hoặc thông báo nghi binh (decoy) để đánh lừa người dịch ngược. Chỉ duy nhất ở khung hình cuối cùng (khung hình số 29 trong mảng đánh số từ 0), tác giả mới in chuỗi ký tự mật mã `4519aff2332e8dd3` lên điểm ảnh.
 
 ---
 
