@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lewall's Blog</title>
+    <link>https://lewall-theart.github.io/</link>
+    <description>CTF Writeups, Reverse Engineering, Binary Exploitation & Security Research.</description>
+    <language>vi</language>
+    <atom:link href="https://lewall-theart.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title><![CDATA[Adobe Keygen – Reverse Engineering]]></title>
+      <link>https://lewall-theart.github.io/posts/adobe-keygen</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/adobe-keygen</guid>
+      <pubDate>Wed, 21 Oct 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Bóc tách chiếc két sắt 6 lớp khóa trong adobe_keygen.exe: từ kỹ thuật quét hàm hệ thống NTDLL, giải mã tệp nhúng COFF, phân tích thuật toán .NET cho đến soi tranh hoạt ảnh GIF giấu tin.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[Cold Case – Difference Steganography]]></title>
+      <link>https://lewall-theart.github.io/posts/cold-case</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/cold-case</guid>
+      <pubDate>Sun, 15 Mar 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Hai tấm ảnh nhiễu. Không có gì để nhìn. Và một flag ẩn trong khoảng cách giữa chúng.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[Escaped Reality]]></title>
+      <link>https://lewall-theart.github.io/posts/Escaped-reality</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/Escaped-reality</guid>
+      <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Web apps love encoding special characters — nhưng khi thứ tự bị đảo ngược, mọi thứ trở nên kỳ lạ hơn bạn nghĩ.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[The ROT Side]]></title>
+      <link>https://lewall-theart.github.io/posts/the-rot-side</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/the-rot-side</guid>
+      <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[ROT13 là trò trẻ con. Người anh em bí ẩn của nó xử lý toàn bộ printable ASCII — và đó mới là thứ đáng sợ thực sự.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[Basic Encoding Soup]]></title>
+      <link>https://lewall-theart.github.io/posts/basic-encoding-soup</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/basic-encoding-soup</guid>
+      <pubDate>Tue, 10 Mar 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Ba lớp mặt nạ xếp chồng nhau — Hex, Base64, ROT13. Không cần toán học, chỉ cần đôi mắt biết nhìn.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[Papi Cris' Fortune]]></title>
+      <link>https://lewall-theart.github.io/posts/papi-cris</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/papi-cris</guid>
+      <pubDate>Sun, 08 Mar 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[RSA với số nguyên tố nhỏ ẩn trong câu chuyện gia đình. Trial division phá vỡ toàn bộ trong dưới một giây.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
+      <title><![CDATA[Double Trouble]]></title>
+      <link>https://lewall-theart.github.io/posts/double-trouble</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/double-trouble</guid>
+      <pubDate>Tue, 11 Mar 2025 00:00:00 GMT</pubDate>
+      <description><![CDATA[Kẻ tấn công đôi khi áp dụng cùng một encoding nhiều lần để tránh bị phát hiện. Đơn giản — nhưng hiệu quả hơn bạn nghĩ.]]></description>
+      <author>Lewall</author>
+    </item>
+  </channel>
+</rss>

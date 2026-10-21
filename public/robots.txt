@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lewall-theart.github.io/sitemap.xml

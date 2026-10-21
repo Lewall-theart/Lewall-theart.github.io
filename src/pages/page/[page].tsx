@@ -21,7 +21,7 @@ export async function getStaticPaths() {
     params: { page: String(i + 1) },
   })).filter((p) => p.params.page !== '1');
 
-  return { paths, fallback: 'blocking' };
+  return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }: { params: { page: string } }) {
@@ -60,7 +60,7 @@ export async function getStaticProps({ params }: { params: { page: string } }) {
         tags: post.tags,
       })) satisfies SearchPost[],
     },
-    revalidate: 3600,
+    
   };
 }
 

@@ -55,7 +55,7 @@ export async function getStaticPaths() {
     paths: pages.map((page) => ({
       params: { slug: page.slug }
     })),
-    fallback: 'blocking'
+    fallback: false
   }
 }
 
@@ -74,6 +74,6 @@ export async function getStaticProps({
 
   return {
     props: { page },
-    revalidate: 3600
+    
   }
 }
