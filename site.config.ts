@@ -78,7 +78,7 @@ export const siteConfig = {
   footer: {
     aboutTitle: `About ${siteName}`,
     aboutText:
-      'Sharing In-Depth Insights About Reverse Engineering, CTF Challenges, Windows Internals, and Security Architecture.',
+      'Ghi chép và chia sẻ kiến thức về CTF, Reverse Engineering, Binary, Cryptography và Web Security.',
     connectTitle: 'Connect',
     social: {
       githubUrl: 'https://github.com/Lewall-theart',

@@ -2,22 +2,23 @@
 title: "About Me"
 lastUpdated: "2026-10-21"
 timeline:
-  - year: "2026"
-    category: "Reverse"
-    place: "Security Researcher"
-    role: "Binary Deobfuscation & Windows Internals"
+  - year: "Present"
+    category: "Learning"
+    place: "Security Research Path"
+    role: "Aspiring Security Researcher"
   - year: "2024"
     category: "CTF"
-    place: "Independent CTF Player"
-    role: "Reverse Engineering & Cryptography Focus"
+    place: "CTF Player"
+    role: "Reverse, Binary, Crypto & Web"
 ---
-Xin chào! Tôi là **Lewall**, người đam mê nghiên cứu bảo mật hệ thống, kỹ thuật dịch ngược (Reverse Engineering), và phân tích mã độc.
+Xin chào! Tôi là **Lewall**, hiện đang học tập và định hướng phát triển để trở thành một **Security Researcher**.
 
-Tôi thường xuyên tham gia các giải đấu **CTF (Capture The Flag)** chuyên về các mảng *Reverse Engineering*, *Cryptography*, và *Web Security*. Blog này được xây dựng nhằm ghi lại các phân tích chuyên sâu về kỹ thuật bóc tách mã máy, bypassing cơ chế bảo vệ, và tài liệu hóa kinh nghiệm thực chiến.
+Tôi thường xuyên tham gia các giải đấu **CTF (Capture The Flag)** để rèn luyện kỹ năng thực chiến và tư duy giải quyết vấn đề. Blog cá nhân này được tạo ra làm nơi lưu trữ các bài writeup, ghi chép lại các bài học và chia sẻ những kiến thức tôi học được trong quá trình tìm hiểu về an toàn thông tin.
 
-### Lĩnh vực nghiên cứu trọng tâm
+### Lĩnh vực trọng tâm
 
-- **Windows Internals & Native API:** Nghiên cứu export tables, dynamic syscall stubs, evasion detection, PE/COFF structures.
-- **Binary Deobfuscation:** Phân tích và deobfuscate mã nguồn .NET, giải mã multi-stage loaders và shellcode payloads.
-- **Applied Cryptography:** Phân tích thuật toán mã hóa đối xứng/bất đối xứng (AES, RSA, ECC, custom stream ciphers).
-- **Steganography & Visual Forensics:** Khai thác dữ liệu ẩn trong các kênh hình ảnh và hoạt ảnh số.
+- **Reverse Engineering:** Phân tích mã thực thi, đọc hiểu logic chương trình và dịch ngược binary.
+- **Binary Exploitation:** Tìm hiểu về cấu trúc bộ nhớ, các kỹ thuật khai thác cơ bản và cơ chế phòng vệ hệ thống.
+- **Cryptography:** Khám phá các thuật toán mật mã học cổ điển, mã hóa hiện đại và các điểm yếu khi triển khai thuật toán.
+- **Steganography:** Phân tích dữ liệu ẩn giấu trong file ảnh, âm thanh và các định dạng đa phương tiện.
+- **Web Pentest:** Kiểm thử an toàn ứng dụng web, phân tích luồng xử lý và nhận diện các lỗ hổng bảo mật phổ biến.
