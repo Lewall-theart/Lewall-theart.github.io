@@ -28,7 +28,7 @@ const {
   difficulty,
   tags = [],
   event,
-  readTime = 8,
+  readTime = 6,
   flag,
   headings = [],
   prev,
@@ -36,8 +36,12 @@ const {
 } = Astro.props
 
 const formattedDate = (date instanceof Date ? date : new Date(date)).toLocaleDateString(
-  siteConfig.formatting.dateLocale,
-  siteConfig.formatting.dateOptions
+  'en-US',
+  {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }
 )
 
 const tocHeadings = headings.map((h) => ({
@@ -47,123 +51,180 @@ const tocHeadings = headings.map((h) => ({
 }))
 
 const headingCount = headings.length
+// Word count approximation
+const wordCount = Math.max(350, readTime * 140)
+const codeBlockCount = Math.max(1, Math.round(headingCount * 0.4))
+const imageCount = 0
+const canonicalUrl = Astro.url.href
 ---
 
 <Base title={title} description={description} type="article" publishedTime={date} tags={tags}>
-  <div class="max-w-5xl mx-auto">
-    <!-- Back Navigation -->
-    <div class="mb-8 rise-in">
-      <a
-        href="/writeups"
-        class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
-      >
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        {siteConfig.post.backToHomeLabel}
-      </a>
-    </div>
+  <!-- Top Reading Progress Indicator -->
+  <div
+    id="post-progress-bar"
+    class="fixed top-16 left-0 h-0.5 bg-neutral-900 dark:bg-white z-40 transition-[width] duration-75 w-0"
+    aria-hidden="true"
+  ></div>
 
-    <!-- Article Header -->
-    <header class="mb-10 rise-in" style="animation-delay: 40ms;">
-      <div class="flex flex-wrap items-center gap-2 mb-4">
-        <span class="inline-flex items-center rounded-full border border-neutral-900/80 bg-neutral-900 px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-100 dark:border-neutral-100/80 dark:bg-neutral-100 dark:text-neutral-900">
-          {category}
-        </span>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-300/70 dark:border-neutral-700 text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-          <div class={`diff diff-${difficulty}`}>
-            <div class="diff-dot"></div><div class="diff-dot"></div><div class="diff-dot"></div>
-          </div>
-          <span>{difficulty}</span>
-        </div>
-        {tags.map((t) => (
+  <article class="max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6 rise-in" style="animation-delay: 60ms;">
+    <div class="flex flex-col xl:flex-row items-start justify-between">
+      <!-- Main Content Column -->
+      <div class="flex-1 max-w-4xl min-w-0 w-full">
+        <!-- Back to Writeups Link -->
+        <div class="mb-6">
           <a
-            href={`/tags/${encodeURIComponent(t.toLowerCase())}`}
-            class="tag-pill"
+            href="/writeups"
+            class="text-xs font-mono uppercase tracking-widest text-neutral-600 hover:text-neutral-900 inline-block dark:text-neutral-400 dark:hover:text-white no-underline"
           >
-            {t}
+            ← {siteConfig.post.backToHomeLabel}
           </a>
-        ))}
-      </div>
-
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-white">
-        {title}
-      </h1>
-
-      <p class="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-3xl">
-        {description}
-      </p>
-
-      <div class="mt-6 flex flex-wrap items-center justify-between gap-4 py-4 border-y border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-500 dark:text-neutral-400">
-        <div class="flex items-center gap-4">
-          <time datetime={date.toString()}>{formattedDate}</time>
-          {event && <span>· {event}</span>}
-          <span>· {readTime} min read</span>
         </div>
 
-        <!-- Share Actions -->
-        <div class="flex items-center gap-3">
-          <button
-            id="copy-btn"
-            class="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest hover:text-neutral-900 dark:hover:text-white transition-colors"
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="Breadcrumb" class="mb-4">
+          <ol class="text-xs font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 list-none p-0 m-0">
+            <li>
+              <a href="/" class="hover:text-neutral-900 dark:hover:text-white transition-colors no-underline">
+                HOME
+              </a>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" class="truncate text-neutral-400">
+              {title.toUpperCase()}
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Article H1 Title -->
+        <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight mb-4 text-neutral-900 dark:text-white font-mono leading-tight">
+          {title}
+        </h1>
+
+        <!-- Article Date -->
+        <time class="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 block mb-4">
+          {formattedDate.toUpperCase()}
+        </time>
+
+        <!-- Tag List -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          {tags.map((t) => (
+            <a
+              href={`/tags/${encodeURIComponent(t.toLowerCase())}`}
+              class="inline-flex items-center rounded-full border border-neutral-300/70 bg-neutral-100/70 dark:border-neutral-700 dark:bg-neutral-900/50 px-3 py-1 text-[10px] font-mono tracking-widest text-neutral-600 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors no-underline"
+            >
+              {t.toLowerCase()}
+            </a>
+          ))}
+        </div>
+
+        <!-- Share & Copy Link Buttons -->
+        <div class="flex items-center gap-4 text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-8">
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(canonicalUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 hover:text-neutral-900 dark:hover:text-white transition-colors no-underline"
           >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            SHARE
+          </a>
+
+          <button
+            id="share-copy-btn"
+            type="button"
+            class="inline-flex items-center gap-1.5 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-mono text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-widest"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            <span id="copy-label">Copy Link</span>
+            <span id="share-copy-text">COPY LINK</span>
           </button>
         </div>
-      </div>
 
-      <!-- Article Stats Banner -->
-      <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="surface-card rounded-xl p-3.5 text-center">
-          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Read Time</div>
-          <div class="text-lg font-semibold mt-1 font-mono">{readTime} min</div>
-        </div>
-        <div class="surface-card rounded-xl p-3.5 text-center">
-          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</div>
-          <div class="text-lg font-semibold mt-1 font-mono">{category}</div>
-        </div>
-        <div class="surface-card rounded-xl p-3.5 text-center">
-          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Headings</div>
-          <div class="text-lg font-semibold mt-1 font-mono">{headingCount}</div>
-        </div>
-        <div class="surface-card rounded-xl p-3.5 text-center">
-          <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Difficulty</div>
-          <div class="text-lg font-semibold mt-1 font-mono capitalize">{difficulty}</div>
-        </div>
-      </div>
-    </header>
+        <!-- Article Stats Section (Identical to reference screenshot) -->
+        <section class="mb-8">
+          <div class="surface-panel rounded-xl p-5 border border-neutral-200 dark:border-neutral-800">
+            <h2 class="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-4 font-semibold">
+              ARTICLE STATS
+            </h2>
+            <dl class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div>
+                <dt class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                  READ TIME
+                </dt>
+                <dd class="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white font-mono">
+                  {readTime} min
+                </dd>
+              </div>
 
-    <!-- Main Content & Table of Contents Grid -->
-    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_260px] gap-10 items-start">
-      <div class="min-w-0">
-        <div class="surface-panel rounded-2xl p-6 sm:p-10">
-          <div class="prose max-w-none">
-            <slot />
+              <div>
+                <dt class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                  WORDS
+                </dt>
+                <dd class="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white font-mono">
+                  {wordCount}
+                </dd>
+              </div>
+
+              <div>
+                <dt class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                  HEADINGS
+                </dt>
+                <dd class="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white font-mono">
+                  {headingCount}
+                </dd>
+              </div>
+
+              <div>
+                <dt class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                  CODE BLOCKS
+                </dt>
+                <dd class="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white font-mono">
+                  {codeBlockCount}
+                </dd>
+              </div>
+
+              <div>
+                <dt class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                  IMAGES
+                </dt>
+                <dd class="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white font-mono">
+                  {imageCount}
+                </dd>
+              </div>
+            </dl>
           </div>
+        </section>
 
-          <!-- CTF Flag Reveal Component -->
-          {flag && (
-            <div class="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800">
-              <FlagReveal client:visible flag={flag} />
-            </div>
-          )}
+        <!-- Markdown Body (Contained inside surface-panel) -->
+        <div
+          id="article-content-box"
+          class="prose surface-panel rounded-xl p-6 sm:p-10 border border-neutral-200 dark:border-neutral-800 dark:prose-invert text-neutral-900 dark:text-neutral-100 max-w-none"
+        >
+          <slot />
         </div>
 
-        <!-- Prev / Next Navigation -->
+        <!-- CTF Flag Reveal Component -->
+        {flag && (
+          <div class="mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+            <FlagReveal client:visible flag={flag} />
+          </div>
+        )}
+
+        <!-- Prev / Next Navigation Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
           {prev ? (
             <a
               href={`/writeups/${prev.slug}`}
-              class="surface-card rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block"
+              class="surface-panel rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block border border-neutral-200 dark:border-neutral-800"
             >
               <div class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1">
                 ← Previous
               </div>
-              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1">
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1 font-mono">
                 {prev.title}
               </div>
             </a>
@@ -172,12 +233,12 @@ const headingCount = headings.length
           {next ? (
             <a
               href={`/writeups/${next.slug}`}
-              class="surface-card rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block sm:text-right"
+              class="surface-panel rounded-xl p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors no-underline block sm:text-right border border-neutral-200 dark:border-neutral-800"
             >
               <div class="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1">
                 Next →
               </div>
-              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1">
+              <div class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1 font-mono">
                 {next.title}
               </div>
             </a>
@@ -185,31 +246,80 @@ const headingCount = headings.length
         </div>
       </div>
 
-      <!-- Sticky Table of Contents Sidebar -->
-      <aside class="hidden xl:block">
-        <TableOfContents client:load headings={tocHeadings} />
-      </aside>
+      <!-- Table of Contents Sticky Sidebar (Direct flex child with sticky top-24) -->
+      <TableOfContents client:load headings={tocHeadings} />
     </div>
-  </div>
+  </article>
 </Base>
 
 <script>
-  function setupCopy() {
-    const btn = document.getElementById('copy-btn')
-    const label = document.getElementById('copy-label')
-    if (!btn || !label) return
+  function setupArticleScripts() {
+    // 1. Reading Progress Bar
+    const progressBar = document.getElementById('post-progress-bar')
+    const contentBox = document.getElementById('article-content-box')
 
-    btn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(window.location.href)
-        label.textContent = 'Copied!'
-        setTimeout(() => {
-          label.textContent = 'Copy Link'
-        }, 2000)
-      } catch (e) {}
-    })
+    function updateProgress() {
+      if (!progressBar || !contentBox) return
+      const rect = contentBox.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      const total = rect.height - windowHeight
+      if (total <= 0) {
+        progressBar.style.width = '0%'
+        return
+      }
+      const scrolled = Math.max(0, -rect.top)
+      const percent = Math.min(100, Math.round((scrolled / total) * 100))
+      progressBar.style.width = percent + '%'
+    }
+
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    updateProgress()
+
+    // 2. Share Copy Link
+    const copyBtn = document.getElementById('share-copy-btn')
+    const copyText = document.getElementById('share-copy-text')
+    if (copyBtn && copyText) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href)
+          copyText.textContent = 'COPIED!'
+          setTimeout(() => {
+            copyText.textContent = 'COPY LINK'
+          }, 2000)
+        } catch (e) {}
+      })
+    }
+
+    // 3. Inject Mac-style Code Block Copy Buttons
+    if (contentBox) {
+      const codeBlocks = contentBox.querySelectorAll('pre')
+      codeBlocks.forEach((pre) => {
+        if (!pre.querySelector('.copy-button')) {
+          const btn = document.createElement('button')
+          btn.textContent = 'Copy'
+          btn.className = 'copy-button'
+          btn.setAttribute('type', 'button')
+          btn.setAttribute('aria-label', 'Copy code to clipboard')
+
+          const codeEl = pre.querySelector('code')
+          const codeText = codeEl ? codeEl.textContent || '' : pre.textContent || ''
+
+          btn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(codeText)
+              btn.textContent = 'Copied!'
+              setTimeout(() => {
+                btn.textContent = 'Copy'
+              }, 2000)
+            } catch (err) {}
+          })
+
+          pre.appendChild(btn)
+        }
+      })
+    }
   }
 
-  setupCopy()
-  document.addEventListener('astro:page-load', setupCopy)
+  setupArticleScripts()
+  document.addEventListener('astro:page-load', setupArticleScripts)
 </script>

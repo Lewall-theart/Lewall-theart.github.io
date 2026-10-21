@@ -20,8 +20,11 @@
   --code-dot-red: #ff5f57;
   --code-dot-yellow: #febc2e;
   --code-dot-green: #28c840;
+  --code-header-height: 2.2rem;
   --inline-code-bg: rgba(0, 0, 0, 0.06);
   --inline-code-border: rgba(0, 0, 0, 0.12);
+  --code-selection-bg: #44475a;
+  --code-selection-fg: #f8f8f2;
   --accent: #111111;
   --accent-contrast: #f5f5f5;
   --cyan: #0077a6;
@@ -53,8 +56,11 @@
   --code-dot-red: #ff5f57;
   --code-dot-yellow: #febc2e;
   --code-dot-green: #28c840;
+  --code-header-height: 2.2rem;
   --inline-code-bg: rgba(255, 255, 255, 0.08);
   --inline-code-border: rgba(255, 255, 255, 0.16);
+  --code-selection-bg: #44475a;
+  --code-selection-fg: #f8f8f2;
   --accent: #ffffff;
   --accent-contrast: #101010;
   --cyan: #00d4ff;
@@ -101,18 +107,33 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-2);
+}
+
+.toc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 120, 120, 0.3) transparent;
+}
+.toc-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.toc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.toc-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 120, 120, 0.3);
+  border-radius: 4px;
 }
 
 /* Animations */
@@ -132,7 +153,7 @@ body {
   animation: rise 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Component Classes */
+/* Surfaces */
 .surface-bar {
   background-color: var(--bar);
   border-bottom: 1px solid var(--border);
@@ -258,10 +279,13 @@ body {
   color: var(--bg);
 }
 
-/* Prose Markdown typography */
+/* =========================================================
+   PROSE TYPOGRAPHY (Faithfully styled according to Tech-Blog)
+   ========================================================= */
 .prose {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 14.5px;
-  line-height: 1.85;
+  line-height: 1.7;
   color: var(--fg);
 }
 
@@ -269,36 +293,112 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
   color: var(--fg);
-  scroll-margin-top: 90px;
+  scroll-margin-top: 100px;
 }
 
+/* Tech-Blog distinctive H2 header with '#' and pill underline */
 .prose h2 {
-  font-size: 1.45rem;
-  margin: 2.5rem 0 1rem;
-  padding-bottom: 0.5rem;
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding-bottom: 0.45em;
+  margin-top: 1.4em;
+  margin-bottom: 0.6em;
+  font-size: clamp(1.2rem, 1rem + 0.7vw, 1.65rem);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
   border-bottom: 1px solid var(--border);
 }
 
+.prose h2::before {
+  content: '#';
+  font-weight: 700;
+  color: var(--fg);
+  opacity: 0.65;
+}
+
+.prose h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--fg);
+  opacity: 0.85;
+  transition: width 220ms ease;
+}
+
+.prose h2:hover::after {
+  width: 5rem;
+}
+
 .prose h3 {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
   font-size: 1.15rem;
-  margin: 2rem 0 0.8rem;
-  color: var(--cyan);
+  margin-top: 1.25em;
+  margin-bottom: 0.45em;
+  color: var(--fg);
+}
+
+.prose h3::before {
+  content: '##';
+  font-weight: 700;
+  color: var(--fg);
+  opacity: 0.5;
+  font-size: 0.88em;
 }
 
 .prose h4 {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
   font-size: 0.95rem;
-  margin: 1.5rem 0 0.6rem;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
+.prose h4::before {
+  content: '###';
+  font-weight: 600;
+  color: var(--muted-2);
+  font-size: 0.85em;
+}
+
 .prose p {
-  margin: 1rem 0;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
   color: var(--muted);
+  line-height: 1.75;
 }
 
 .dark .prose p {
   color: #c0c0c0;
+}
+
+.prose ul, .prose ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.6em;
+  padding-left: 1.5rem;
+  color: var(--muted);
+}
+
+.dark .prose ul, .dark .prose ol {
+  color: #c0c0c0;
+}
+
+.prose li {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+  line-height: 1.65;
 }
 
 .prose a {
@@ -319,72 +419,110 @@ body {
 }
 
 .prose blockquote {
-  border-left: 2px solid var(--fg);
-  padding: 0.8rem 1.4rem;
-  margin: 1.5rem 0;
-  background: rgba(120, 120, 120, 0.05);
-  color: var(--muted);
+  border-left: 2px solid var(--border);
+  padding: 0.6rem 1.2rem;
+  margin: 1.2rem 0;
+  color: var(--muted-2);
   font-style: italic;
+  background: rgba(120, 120, 120, 0.04);
+  border-radius: 0 8px 8px 0;
 }
 
-.prose code:not(pre code) {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88em;
+.prose :not(pre) > code {
   background: var(--inline-code-bg);
   border: 1px solid var(--inline-code-border);
+  border-radius: 6px;
   padding: 0.15em 0.4em;
-  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.92em;
   color: var(--fg);
 }
 
-/* Mac-like Code blocks */
+/* Mac-like Code blocks (Tech-Blog style) */
 .prose pre {
   position: relative;
-  background: var(--code-bg) !important;
+  margin: 1.5rem 0;
+  padding: calc(var(--code-header-height) + 0.85rem) 1.5rem 1.35rem;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--code-header-bg) 0,
+      var(--code-header-bg) var(--code-header-height),
+      var(--code-bg) var(--code-header-height),
+      var(--code-bg) 100%
+    ) !important;
+  color: var(--code-fg) !important;
   border: 1px solid var(--code-border);
-  border-radius: 12px;
-  margin: 1.8rem 0;
-  overflow: hidden;
-  box-shadow: 0 10px 30px var(--shadow);
-  padding-top: var(--code-header-height, 2.2rem);
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 12px 28px var(--shadow);
 }
 
 .prose pre::before {
   content: '';
   position: absolute;
-  top: 0.75rem;
+  top: 0.68rem;
   left: 1rem;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--code-dot-red);
-  box-shadow: 16px 0 0 var(--code-dot-yellow), 32px 0 0 var(--code-dot-green);
+  width: 2.2rem;
+  height: 0.6rem;
+  background:
+    radial-gradient(circle at 0.3rem 0.3rem, var(--code-dot-red) 0.28rem, transparent 0.3rem),
+    radial-gradient(circle at 1.1rem 0.3rem, var(--code-dot-yellow) 0.28rem, transparent 0.3rem),
+    radial-gradient(circle at 1.9rem 0.3rem, var(--code-dot-green) 0.28rem, transparent 0.3rem);
+  opacity: 0.95;
   z-index: 2;
 }
 
 .prose pre::after {
-  content: attr(data-lang);
+  content: attr(data-language);
   position: absolute;
-  top: 0.6rem;
-  right: 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1.5px;
+  top: 0.52rem;
+  left: 4rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--code-label);
+  font-family: 'JetBrains Mono', monospace;
   z-index: 2;
 }
 
 .prose pre code {
   display: block;
-  padding: 1.2rem 1.5rem 1.4rem;
-  background: none;
+  padding: 0;
+  background: none !important;
   border: none;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.7;
-  overflow-x: auto;
   color: var(--code-fg);
+}
+
+.copy-button {
+  position: absolute;
+  right: 0.9rem;
+  top: 0.45rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--code-label);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--code-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: 5;
+}
+
+pre:hover .copy-button {
+  opacity: 1;
+}
+
+.copy-button:focus {
+  outline: 2px solid var(--code-label);
+  outline-offset: 2px;
 }
 
 .prose table {
@@ -420,16 +558,8 @@ body {
   background: rgba(120, 120, 120, 0.04);
 }
 
-.prose ul, .prose ol {
-  padding-left: 1.5rem;
-  margin: 1rem 0;
-  color: var(--muted);
-}
-
-.dark .prose ul, .dark .prose ol {
-  color: #c0c0c0;
-}
-
-.prose li {
-  margin-bottom: 0.4rem;
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
 }
