@@ -265,6 +265,30 @@ export default function Post({ post, relatedPosts }: PostProps) {
     }
   }, [post.html])
 
+
+  useEffect(() => {
+    const container = contentRef.current
+    if (!container) return
+
+    const mermaidNodes = container.querySelectorAll('.mermaid:not([data-processed="true"])')
+    if (mermaidNodes.length > 0) {
+      import('mermaid').then(({ default: mermaid }) => {
+        const isDark = document.documentElement.classList.contains('dark')
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? 'dark' : 'default',
+          securityLevel: 'loose',
+          fontFamily: 'JetBrains Mono, monospace',
+        })
+        mermaid.run({
+          nodes: Array.from(mermaidNodes) as HTMLElement[],
+        }).catch((err) => {
+          console.warn('Mermaid render error:', err)
+        })
+      })
+    }
+  }, [post.html])
+
   const content = post.html
   const jsonLd = createPostJsonLd(post)
 
@@ -272,9 +296,9 @@ export default function Post({ post, relatedPosts }: PostProps) {
     <Layout title={post.title} jsonLd={jsonLd}>
       <div style={{ width: progress + '%' }} className="fixed top-16 left-0 h-0.5 bg-neutral-900 dark:bg-white z-40 transition-[width] duration-100" aria-hidden="true" />
       <article className="max-w-[1600px] mx-auto px-4 lg:px-8 rise-in" style={{ animationDelay: '60ms' }}>
-        <div className="flex flex-col xl:flex-row">
+        <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-8">
           {/* Main content */}
-          <div className="flex-1 max-w-4xl">
+          <div className="flex-1 max-w-4xl min-w-0">
             <div className="mb-12">
               <Link href="/" className="text-xs font-mono uppercase tracking-widest text-neutral-600 hover:text-neutral-900 mb-8 inline-block dark:text-neutral-400 dark:hover:text-white">
                 {siteConfig.post.backToHomeLabel}

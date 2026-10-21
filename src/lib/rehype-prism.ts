@@ -114,6 +114,22 @@ export default function rehypePrism() {
         const codeNode = node.children.find((child) => isElement(child, 'code'));
         if (codeNode) {
           const rawLanguage = getLanguage(codeNode);
+          if (rawLanguage === 'mermaid') {
+            const chartCode = getText(codeNode).trim();
+            node.tagName = 'div';
+            node.properties = {
+              className: ['mermaid-wrapper']
+            };
+            node.children = [
+              {
+                type: 'element',
+                tagName: 'div',
+                properties: { className: ['mermaid'] },
+                children: [{ type: 'text', value: chartCode }]
+              }
+            ];
+            return;
+          }
           if (rawLanguage && !IGNORED_LANGUAGES.has(rawLanguage)) {
             node.properties = {
               ...(node.properties ?? {}),

@@ -21,7 +21,7 @@ tags:
 
 ---
 
-## 1. Tổng quan thử thách (Challenge Overview)
+## 1. Tổng quan thử thách
 
 - **Tên file:** `adobe_keygen.exe`
 - **Internal PDB:** `smart_banking_ctf.pdb`
@@ -39,7 +39,7 @@ tags:
 
 ---
 
-## 2. Bảng tổng kết cờ (Flag Summary)
+## 2. Tổng kết các phần cờ
 
 | Thành phần | Ý nghĩa kỹ thuật | Giá trị 16 hex |
 | :--- | :--- | :--- |
@@ -57,7 +57,7 @@ DF26{0446b89793812baf_cc3cec7b19bc6381_ab51ba2f81be8cb8_f5b29d9f8fc0f574_724bb67
 
 ---
 
-## 3. Phân tích chi tiết từng giai đoạn
+## 3. Phân tích chi tiết
 
 ```mermaid
 flowchart TD
@@ -71,13 +71,13 @@ flowchart TD
 
 ---
 
-### Giai đoạn 1: Khôi phục S1 (Transaction Hash 1)
+### Giai đoạn 1: Khôi phục S1
 
-#### 1. Định vị trong IDA Pro
+#### 1. Phân tích trong IDA
 Quan sát hàm `main` (hoặc hàm khởi tạo chuỗi logic ban đầu), chương trình tham chiếu đến mảng byte mã hóa tại `byte_14003405B`.
 Dữ liệu tại vị trí này được biến đổi qua một vòng lặp XOR với key tĩnh hoặc phép dịch bit đơn giản để tạo ra một chuỗi URL/Hex text.
 
-#### 2. Kỹ thuật giải mã
+#### 2. Giải mã Sepolia Hash 1
 - Khối dữ liệu sau khi decode hiển thị một Ethereum Sepolia Transaction Hash chuẩn:
   `0x0446b89793812bafafa5e59b747e2daf5c8e7cef11dde9bba18e1776bf6f0a67`
 - Theo định dạng yêu cầu của đề bài: S1 là 16 ký tự hex đầu tiên sau tiền tố `0x`:
@@ -85,9 +85,9 @@ Dữ liệu tại vị trí này được biến đổi qua một vòng lặp XO
 
 ---
 
-### Giai đoạn 2: Khôi phục S2 (Key 1 - NTDLL System Call Hashes)
+### Giai đoạn 2: Khôi phục S2
 
-#### 1. Cơ chế hoạt động của thuật toán
+#### 1. Quét NTDLL Hashes
 Chương trình thực hiện kiểm tra tính toàn vẹn và phân tích môi trường thực thi runtime bằng cách duyệt qua Export Directory của thư viện `ntdll.dll`:
 1. Quét toàn bộ hàm xuất xưởng (exported functions) có tên bắt đầu bằng tiền tố `Nt`.
 2. Kiểm tra xem stub mở đầu có khớp với bytecode chuẩn của x64 syscall stub:
@@ -105,12 +105,12 @@ Chương trình thực hiện kiểm tra tính toàn vẹn và phân tích môi 
 
 ---
 
-### Giai đoạn 3: Khôi phục S3 & S4 (COFF Object & Transaction Hash 2)
+### Giai đoạn 3: Khôi phục S3 & S4
 
-#### 1. Trích xuất Payload COFF Object
+#### 1. Trích xuất COFF Object
 Chương trình chứa một vùng nhớ payload nhúng tại section `.rdata` được mã hóa RC4. Khi giải mã khối này bằng khóa dẫn xuất từ các bước trước, ta thu được một file COFF Object format (`decrypted_payload.obj`).
 
-#### 2. Khôi phục S4 (Key 2)
+#### 2. Khôi phục S4
 Phân tích bảng ký hiệu (Symbol Table) của `decrypted_payload.obj`:
 - Tồn tại symbol public tên là `g_k_dotnet`.
 - Nội dung trích xuất tại offset của `g_k_dotnet`:
@@ -118,7 +118,7 @@ Phân tích bảng ký hiệu (Symbol Table) của `decrypted_payload.obj`:
 - 16 ký tự hex đầu tiên chính là **S4**:
   `S4 = f5b29d9f8fc0f574`
 
-#### 3. Khôi phục S3 (Transaction Hash 2)
+#### 3. Khôi phục S3
 Vùng dữ liệu tại `unk_1400328DC` trong binary gốc được mã hóa RC4 với khóa giải mã chính là chuỗi `g_k_dotnet`.
 Sau khi giải mã RC4:
 - Thu được chuỗi giao dịch Sepolia thứ hai:
@@ -128,7 +128,7 @@ Sau khi giải mã RC4:
 
 ---
 
-### Giai đoạn 4: Khôi phục S5 (.NET Runtime Payload Computation)
+### Giai đoạn 4: Khôi phục S5
 
 #### 1. Phân tích .NET Assembly
 Trong payload giải mã được từ COFF object hoặc resource đính kèm, chương trình nhúng một assembly .NET (`recovered_dotnet.exe` / `CtfPayload.dll`).
@@ -140,7 +140,7 @@ Khi decompilation bằng dnSpy / ILSpy:
   ```
 - Hàm này thực hiện các phép biến đổi kết hợp (AES-CBC, HMAC-SHA256 và custom permutation) giữa các khóa đầu vào.
 
-#### 2. Thực thi khôi phục
+#### 2. Thực thi tính toán S5
 Chạy script PowerShell / C# hoặc Python mô phỏng tương đương với các tham số:
 - `s1 = "0446b89793812baf"`
 - `s2 = "cc3cec7b19bc6381"`
@@ -153,16 +153,16 @@ Kết quả trả về chính xác chuỗi:
 
 ---
 
-### Giai đoạn 5: Khôi phục S6 (Visual Reward Decoding)
+### Giai đoạn 5: Khôi phục S6
 
-#### 1. Giải mã Shellcode Resource
+#### 1. Giải mã Shellcode
 Ở offset `0x24D8` trong shellcode loader, chương trình chứa blob dữ liệu mã hóa mang tên `encReward`.
 Khóa giải mã RC4 được sinh ra thông qua hàm:
 ```csharp
 CtfPayload.llll.lIIl(s1, s2, s3, s4, s5, 32)
 ```
 
-#### 2. Trích xuất file ảnh động (GIF)
+#### 2. Đọc Frame 29 ảnh GIF
 Thực hiện giải mã RC4 với khóa trên, kết quả đầu ra có magic header `GIF89a`:
 - File được lưu thành `reward_flag.gif`.
 - Animation bao gồm 30 frames (từ `frame_0` đến `frame_29`).
@@ -172,7 +172,7 @@ Thực hiện giải mã RC4 với khóa trên, kết quả đầu ra có magic 
 
 ---
 
-## 4. Script Python tự động giải mã & kiểm chứng
+## 4. Script giải mã & kiểm chứng
 
 ```python
 import hashlib

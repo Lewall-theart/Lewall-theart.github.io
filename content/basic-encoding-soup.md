@@ -110,7 +110,7 @@ VW5weFNiZXRye3Vya19v...cH0=  ← Base64
         ↓  base64.b64decode()
 UnpxSbetry{urk_o64_ebgMT3_pynffvph}  ← ROT13
         ↓  codecs.decode('rot_13')
-HackForely{hex_b64_rot13_classic}    ← FLAG 🚩
+HackForely{hex_b64_rot13_classic}    ← FLAG
 ```
 
 ## Bài học rút ra

@@ -103,7 +103,7 @@ JTQ4JTYx...JTdE                              ← Base64 string
         ↓  base64.decode()
 %48%61%63%6B%46%6F%72%67%65%7B...%7D         ← URL percent-encoded
         ↓  urllib.parse.unquote()
-HackForge{url_encoding_escape_artist}        ← FLAG 🚩
+HackForge{url_encoding_escape_artist}        ← FLAG
 ```
 
 ## Điểm mấu chốt: "unexpected orders"

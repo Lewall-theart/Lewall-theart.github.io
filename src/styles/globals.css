@@ -327,7 +327,10 @@ body {
   color: var(--code-fg);
   border: 1px solid var(--code-border);
   border-radius: 14px;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   box-shadow: 0 12px 28px var(--shadow);
 }
 
@@ -365,6 +368,9 @@ body {
 .prose pre code {
   @apply font-mono text-[14px] leading-relaxed;
   tab-size: 4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .prose :not(pre) > code {
@@ -524,4 +530,31 @@ body {
 
 .video-container iframe {
   @apply absolute top-0 left-0 w-full h-full border-0;
+}
+
+
+/* Mermaid Diagram Styling */
+.mermaid-wrapper {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.mermaid {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+  font-family: inherit !important;
 }

@@ -16,7 +16,7 @@ tags:
 
 ---
 
-## 🧩 Đề bài
+## Đề bài
 
 Chúng ta được cho hai file ảnh:
 
@@ -30,7 +30,7 @@ Mở ra — cả hai trông như tĩnh điện TV lúc mất sóng. Toàn bộ l
 
 ---
 
-## 🔍 Bước 1: Nhận diện vấn đề
+## Bước 1: Nhận diện vấn đề
 
 Khi gặp hai ảnh noise, câu hỏi đầu tiên luôn là: **chúng có khác nhau không?**
 
@@ -61,7 +61,7 @@ Pixels khác : 230155 / 230400
 
 ---
 
-## 🔬 Bước 2: Khám phá cấu trúc của sự khác biệt
+## Bước 2: Khám phá sự khác biệt
 
 Trước tiên, hãy nhìn vào diff dưới dạng ảnh — chuẩn hóa về range 0–255:
 
@@ -95,7 +95,7 @@ img_amp.save("amplified.png")
 
 ---
 
-## ⚡ Bước 3: Hiểu cơ chế ẩn
+## Bước 3: Cơ chế ẩn dữ liệu
 
 Technique ở đây hoạt động như sau:
 
@@ -116,7 +116,7 @@ mask = |A - B|.max(across channels) > threshold
 
 ---
 
-## 🎯 Bước 4: Tìm threshold phù hợp
+## Bước 4: Tìm threshold phù hợp
 
 ```python
 thresholds = [10, 30, 50, 70, 100]
@@ -148,7 +148,7 @@ Threshold 50 — sạch hơn nhiều, text bắt đầu rõ:
 
 ---
 
-## 🔎 Bước 5: Zoom vào flag
+## Bước 5: Trích xuất flag
 
 Phóng to vùng chứa text (phần dưới của ảnh):
 
@@ -178,7 +178,7 @@ Image.fromarray(clean_text).resize(
 
 ---
 
-## 🏁 Flag
+## Flag
 
 Đọc từng ký tự từ ảnh — chú ý đây là **leet speak**:
 
@@ -194,7 +194,7 @@ psych{4lph4_ch4nn3l_d1d_th3_th1ng}
 
 ---
 
-## 🛠️ Full Script
+## Full Script
 
 Đây là toàn bộ solver, chạy một lệnh ra kết quả:
 
@@ -246,8 +246,8 @@ def solve(path_a: str, path_b: str, out: str = "output") -> None:
     best_zoom = Image.fromarray(best).resize((w * 4, h * 4), Image.NEAREST)
     best_zoom.save(f"{out}_BEST.png")
 
-    print(f"\n[✓] Done! Open {out}_BEST.png to read the flag.")
-    print( "[✓] If text is unclear, try _thresh_30.png (more pixels) or _thresh_70.png (cleaner).")
+    print(f"\n[+] Done! Open {out}_BEST.png to read the flag.")
+    print( "[+] If text is unclear, try _thresh_30.png (more pixels) or _thresh_70.png (cleaner).")
 
 
 if __name__ == "__main__":
@@ -266,7 +266,7 @@ python solve.py ward_a.png ward_b.png result
 
 ---
 
-## 💡 Takeaway
+## Takeaway
 
 Difference Steganography là một kỹ thuật tinh tế vì:
 
@@ -278,7 +278,7 @@ Khi gặp hai ảnh noise trong một CTF:
 - Luôn tính `|A - B|` ngay từ đầu
 - Thử nhiều ngưỡng khác nhau
 - Phóng to vùng nghi ngờ
-- Đừng quên **leet speak** khi đọc flag 😄
+- Đừng quên **leet speak** khi đọc flag.
 
 ---
 

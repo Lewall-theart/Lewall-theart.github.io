@@ -133,7 +133,7 @@ O4ZDIPD VIBBTQNSMINAE...                        ← Base32
         ↓  base64.b32decode()
 =rwAx:?5rwAx:?5\6==\eFC...                      ← ROT47'd text
         ↓  rot47()
-HackForge{rot47_the_other_rotation}             ← FLAG 🚩
+HackForge{rot47_the_other_rotation}             ← FLAG
 ```
 
 ## ROT13 vs ROT47 — So sánh
@@ -142,8 +142,8 @@ HackForge{rot47_the_other_rotation}             ← FLAG 🚩
 |---|---|---|
 | Phạm vi | `A-Z`, `a-z` (52 ký tự) | `!` → `~` (94 ký tự) |
 | Dịch chuyển | 13 vị trí | 47 vị trí |
-| Ảnh hưởng số? | ❌ Không | ✅ Có |
-| Ảnh hưởng ký tự đặc biệt? | ❌ Không | ✅ Có |
+| Ảnh hưởng số? | Không | Có |
+| Ảnh hưởng ký tự đặc biệt? | Không | Có |
 | Nhận dạng | Text vô nghĩa, chỉ chữ cái bị lệch | Text vô nghĩa, **cả số và ký tự đặc biệt** bị lệch |
 
 **Mẹo nhận dạng nhanh:** Nếu thấy `{` hoặc `}` bị biến thành ký tự lạ như `\[` hay `]`, nghĩ ngay đến ROT47 — vì ROT13 không bao giờ đụng đến dấu ngoặc.

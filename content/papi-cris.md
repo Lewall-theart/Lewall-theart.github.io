@@ -15,7 +15,7 @@ Khi mở challenge, tôi thấy một cây gia phả dài — đầy những nh�
 
 > "Trong CTF, câu chuyện không bao giờ chỉ là câu chuyện. Đó là mật mã dưới dạng văn xuôi."
 
-## 🧾 Initial Data
+## Dữ liệu ban đầu
 
 Challenge cung cấp RSA parameters chuẩn:
 
@@ -27,23 +27,23 @@ c = 6231872210586447563307026724797410213049258686...
 
 Mục tiêu: tìm `m = cᵈ mod n`. Và để làm vậy, cần factor `n = p × q`.
 
-## 🌳 Đọc cây gia phả
+## Phân tích cây gia phả
 
 Mỗi nhân vật ẩn một manh mối toán học.
 
-### 👩‍🔬 Prima Sofia — The First Real Hint
+### Prima Sofia — Gợi ý đầu tiên
 
 > *"O papi Cris dizia que até 100000 era perto e que basta descobrir um que o outro é óbvio"*
 
 Khoảnh khắc đọc tới đây — tim đập nhanh hơn một chút. Đây là hint rõ nhất: **q < 100.000**.
 
-### 🎲 Primo Ricardo
+### Primo Ricardo
 
 > *"Se pudesse escolher um número da sorte seria 777..."*
 
 **p ≈ 2^777**. Một số nguyên tố khổng lồ ~777 bit. Kết hợp với Sofia: `n = p × q` trong đó `q` cực nhỏ.
 
-### 🎮 Irmão Rafinha
+### Irmão Rafinha
 
 ```text
 Fortnite_Pass = f1e2d3c4b5a69788796a5b4c3d2e1f0a9
@@ -51,13 +51,13 @@ Fortnite_Pass = f1e2d3c4b5a69788796a5b4c3d2e1f0a9
 
 32 ký tự hex — ghi chú lại, có thể dùng sau decrypt.
 
-### 👵 Avó Bastarda — Red Herring
+### Avó Bastarda — Red Herring
 
 *"Roubou 2€ da carteira do papi Cris em 2009"*
 
 Con số `2` và `2009` trông như hint nhưng không dẫn đến đâu. **Bỏ qua.**
 
-## 🧠 Kế hoạch tấn công
+## Kế hoạch tấn công
 
 Từ hai manh mối cốt lõi:
 
@@ -66,7 +66,7 @@ Từ hai manh mối cốt lõi:
 | q | < 100.000 → trial division |
 | p | ≈ 2^777 → tính từ n/q |
 
-## 💻 Script giải
+## Script giải
 
 **Bước 1 — Factor n:**
 
@@ -80,7 +80,7 @@ c = 623187221058644756330702672479741021304925868602...
 for q in primerange(2, 100_000):
     if n % q == 0:
         p = n // q
-        print(f"✓ Factor found: q = {q}")
+        print(f"[+] Factor found: q = {q}")
         print(f"  p = {p}")
         break
 ```
@@ -96,7 +96,7 @@ m   = pow(c, d, n)
 print(long_to_bytes(m))
 ```
 
-## 🎉 Flag
+## Flag
 
 Khi terminal in ra plaintext — cảm giác đó không thể diễn tả.
 
@@ -104,7 +104,7 @@ Khi terminal in ra plaintext — cảm giác đó không thể diễn tả.
 S3cr3t_to_p4pis_f0rtune
 ```
 
-## 📚 Lessons Learned
+## Kết luận
 
 - **Small prime factor** làm RSA sụp đổ hoàn toàn trong mili-giây
 - Luôn đọc kỹ narrative — CTF author nhúng hint vào mọi dòng chữ

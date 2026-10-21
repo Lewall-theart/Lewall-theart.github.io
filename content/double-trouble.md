@@ -99,7 +99,7 @@ U0dGamEw...PT0=                                   ← Base64 layer 1
         ↓  base64.b64decode()
 SGFja0Zv...fQ==                                   ← Base64 layer 2
         ↓  base64.b64decode()
-HackForge{double_base64_layers}                   ← FLAG 🚩
+HackForge{double_base64_layers}                   ← FLAG
 ```
 
 ## Tại sao double encoding tồn tại?
