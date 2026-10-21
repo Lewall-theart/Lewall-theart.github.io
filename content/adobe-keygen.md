@@ -64,9 +64,13 @@ flowchart TD
     A["adobe_keygen.exe (PE64)"] --> B["Giai đoạn 1: Khôi phục S1<br/>Giải mã Sepolia Tx Hash 1"]
     A --> C["Giai đoạn 2: Tính toán S2<br/>Quét ntdll Export Table & Hash Stubs"]
     A --> D["Giai đoạn 3: Khôi phục S3 & S4<br/>Giải mã COFF Object & Tx Hash 2"]
-    D --> E["Giai đoạn 4: Khôi phục S5<br/>Nạp .NET Payload & Thực thi CtfPayload.llll.IIII"]
-    E --> F["Giai đoạn 5: Khôi phục S6<br/>Giải mã Reward GIF Animation & Đọc Frame 29"]
-    B & C & D & E & F --> G["Hoàn thiện Flag DF26{S1_S2_S3_S4_S5_S6}"]
+    
+    B --> E["Giai đoạn 4: Khôi phục S5<br/>Nạp bộ khóa (S1, S2, S3, S4) vào .NET Payload"]
+    C --> E
+    D --> E
+    
+    E --> F["Giai đoạn 5: Khôi phục S6<br/>Giải mã Reward GIF & Đọc Frame 29"]
+    F --> G["Hoàn thiện Flag<br/>DF26{S1_S2_S3_S4_S5_S6}"]
 ```
 
 ---
