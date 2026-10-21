@@ -4,7 +4,7 @@ lastUpdated: "2026-10-21"
 timeline:
   - year: "Present"
     category: "Learning"
-    place: "Security Research Path"
+    place: "Security Research"
     role: "Aspiring Security Researcher"
   - year: "2024"
     category: "CTF"
