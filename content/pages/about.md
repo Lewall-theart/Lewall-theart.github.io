@@ -22,3 +22,9 @@ Tôi thường xuyên tham gia các giải đấu **CTF (Capture The Flag)** đ�
 - **Cryptography:** Khám phá các thuật toán mật mã học cổ điển, mã hóa hiện đại và các điểm yếu khi triển khai thuật toán.
 - **Steganography:** Phân tích dữ liệu ẩn giấu trong file ảnh, âm thanh và các định dạng đa phương tiện.
 - **Web Pentest:** Kiểm thử an toàn ứng dụng web, phân tích luồng xử lý và nhận diện các lỗ hổng bảo mật phổ biến.
+
+### Kết nối (Connect)
+
+- **GitHub:** [https://github.com/Lewall-theart](https://github.com/Lewall-theart)
+- **LinkedIn:** [https://www.linkedin.com/in/lewall1005/](https://www.linkedin.com/in/lewall1005/)
+- **X (Twitter):** *(Tạm thời chưa có)*

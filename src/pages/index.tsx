@@ -82,7 +82,7 @@ export default function Home({ posts, currentPage, totalPages, searchPosts }: Ho
           {siteConfig.openSource.enabled && <OpenSourceStatus />}
         </section>
 
-        <section className="space-y-10">
+        <section id="posts" className="space-y-10 scroll-mt-24">
           {posts.map((post, index) => (
             <article
               key={post.slug}

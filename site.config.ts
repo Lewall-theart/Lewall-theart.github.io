@@ -13,20 +13,16 @@ export const siteConfig = {
   nav: {
     links: [
       {
-        label: 'Github',
-        href: 'https://github.com/Lewall-theart',
+        label: 'Home',
+        href: '/',
+      },
+      {
+        label: 'Blog',
+        href: '/#posts',
       },
       {
         label: 'About',
         href: '/about',
-      },
-      {
-        label: 'Achievement',
-        href: '/achievement',
-      },
-      {
-        label: 'RSS',
-        href: '/feed.xml',
       },
     ],
   },
@@ -82,7 +78,8 @@ export const siteConfig = {
     connectTitle: 'Connect',
     social: {
       githubUrl: 'https://github.com/Lewall-theart',
-      xUrl: 'https://x.com',
+      linkedinUrl: 'https://www.linkedin.com/in/lewall1005/',
+      xUrl: '',
     },
   },
   openSource: {
