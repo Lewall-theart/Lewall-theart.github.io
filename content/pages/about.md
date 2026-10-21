@@ -11,7 +11,11 @@ timeline:
     place: "CTF Player"
     role: "Reverse, Binary, Crypto & Web"
 ---
-Xin chào! Tôi là **Lewall**, hiện đang học tập và định hướng phát triển để trở thành một **Security Researcher**.
+<p align="center">
+  <img src="/avatar-circle-512x512.png" alt="5u!g3t$u_70uy4" width="128" height="128" style="border-radius: 50%; box-shadow: 0 4px 20px rgba(0,0,0,0.4);" />
+</p>
+
+Xin chào! Tôi là **5u!g3t$u_70uy4**, hiện đang học tập và định hướng phát triển để trở thành một **Security Researcher**.
 
 Tôi thường xuyên tham gia các giải đấu **CTF (Capture The Flag)** để rèn luyện kỹ năng thực chiến và tư duy giải quyết vấn đề. Blog cá nhân này được tạo ra làm nơi lưu trữ các bài writeup, ghi chép lại các bài học và chia sẻ những kiến thức tôi học được trong quá trình tìm hiểu về an toàn thông tin.
 

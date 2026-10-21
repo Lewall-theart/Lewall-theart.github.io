@@ -106,6 +106,7 @@ export default function Layout({
           {/* Canonical */}
           {canonical && <link rel="canonical" href={canonical} />}
 
+          <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
           <link rel="icon" href="/favicon.ico" />
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -127,10 +128,17 @@ export default function Layout({
         <header className={`sticky top-0 z-50 transition-all duration-200 surface-bar ${isScrolled ? 'shadow-sm' : ''}`}>
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <span className="text-lg sm:text-xl font-mono tracking-widest text-neutral-900 dark:text-white">
-                  {siteConfig.name}
-                </span>
+              <Link href="/" className="flex items-center space-x-2 group py-1" title={siteConfig.name}>
+                <img
+                  src="/logo-dark.svg"
+                  alt={siteConfig.name}
+                  className="h-8 sm:h-9 w-auto hidden dark:block transition-transform duration-200 group-hover:scale-105"
+                />
+                <img
+                  src="/logo-light.svg"
+                  alt={siteConfig.name}
+                  className="h-8 sm:h-9 w-auto block dark:hidden transition-transform duration-200 group-hover:scale-105"
+                />
               </Link>
 
               <div className="flex items-center space-x-6">

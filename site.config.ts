@@ -1,14 +1,14 @@
-const siteName = "Lewall's Blog"
+const siteName = "5u!g3t$u_70uy4's Blog"
 
 export const siteConfig = {
   siteUrl: process.env.SITE_URL || 'https://lewall-theart.github.io',
   name: siteName,
   metaDescription: 'CTF Writeups, Reverse Engineering, Binary Exploitation & Security Research.',
   api: {
-    helloName: "Lewall",
+    helloName: "5u!g3t$u_70uy4",
   },
   author: {
-    name: 'Lewall',
+    name: '5u!g3t$u_70uy4',
   },
   nav: {
     links: [
