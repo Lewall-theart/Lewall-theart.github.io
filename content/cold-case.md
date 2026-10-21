@@ -1,9 +1,11 @@
 ---
-title: "Cold Case – Difference Steganography"
-date: "2026-03-15"
-excerpt: "Hai tấm ảnh nhiễu. Không có gì để nhìn. Và một flag ẩn trong khoảng cách giữa chúng."
-featured: "/img/writeups/cold-case/step1_side_by_side.png"
-flag: "psych{4lph4_ch4nn3l_d1d_th3_th1ng}"
+title: Cold Case – Difference Steganography
+date: '2026-03-15'
+excerpt: >-
+  Hai tấm ảnh nhiễu. Không có gì để nhìn. Và một flag ẩn trong khoảng cách giữa
+  chúng.
+featured: /thumbnails/cold-case.jpg
+flag: 'psych{4lph4_ch4nn3l_d1d_th3_th1ng}'
 tags:
   - Steganography
   - CTF

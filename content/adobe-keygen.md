@@ -1,9 +1,13 @@
 ---
-title: "Adobe Keygen – Reverse Engineering"
-date: "2026-10-21"
-excerpt: "Bóc tách chiếc két sắt 6 lớp khóa trong adobe_keygen.exe: từ kỹ thuật quét hàm hệ thống NTDLL, giải mã tệp nhúng COFF, phân tích thuật toán .NET cho đến soi tranh hoạt ảnh GIF giấu tin."
-featured: "/images/test1.jpg"
-flag: "DF26{0446b89793812baf_cc3cec7b19bc6381_ab51ba2f81be8cb8_f5b29d9f8fc0f574_724bb67f13c6aee8_4519aff2332e8dd3}"
+title: Adobe Keygen – Reverse Engineering
+date: '2026-10-21'
+excerpt: >-
+  Bóc tách chiếc két sắt 6 lớp khóa trong adobe_keygen.exe: từ kỹ thuật quét hàm
+  hệ thống NTDLL, giải mã tệp nhúng COFF, phân tích thuật toán .NET cho đến soi
+  tranh hoạt ảnh GIF giấu tin.
+featured: /thumbnails/cyber-keygen.jpg
+flag: >-
+  DF26{0446b89793812baf_cc3cec7b19bc6381_ab51ba2f81be8cb8_f5b29d9f8fc0f574_724bb67f13c6aee8_4519aff2332e8dd3}
 tags:
   - Reverse
   - Reverse Engineering

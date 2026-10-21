@@ -1,14 +1,17 @@
 ---
-title: "Escaped Reality"
-date: "2026-03-11"
-excerpt: "Web apps love encoding special characters — nhưng khi thứ tự bị đảo ngược, mọi thứ trở nên kỳ lạ hơn bạn nghĩ."
-flag: "HackForge{url_encoding_escape_artist}"
+title: Escaped Reality
+date: '2026-03-11'
+excerpt: >-
+  Web apps love encoding special characters — nhưng khi thứ tự bị đảo ngược, mọi
+  thứ trở nên kỳ lạ hơn bạn nghĩ.
+flag: 'HackForge{url_encoding_escape_artist}'
 tags:
   - Web
   - ROT13
   - Base64
   - URL-Encoding
   - Encoding
+featured: /thumbnails/cute-cat-nature.jpg
 ---
 
 

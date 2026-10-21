@@ -1,14 +1,17 @@
 ---
-title: "Double Trouble"
-date: "2025-03-11"
-excerpt: "Kẻ tấn công đôi khi áp dụng cùng một encoding nhiều lần để tránh bị phát hiện. Đơn giản — nhưng hiệu quả hơn bạn nghĩ."
-flag: "HackForge{double_base64_layers}"
+title: Double Trouble
+date: '2025-03-11'
+excerpt: >-
+  Kẻ tấn công đôi khi áp dụng cùng một encoding nhiều lần để tránh bị phát hiện.
+  Đơn giản — nhưng hiệu quả hơn bạn nghĩ.
+flag: 'HackForge{double_base64_layers}'
 tags:
   - Crypto
   - Base64
   - Hex
   - Encoding
   - Double-Encoding
+featured: /thumbnails/lake-reflection.jpg
 ---
 
 

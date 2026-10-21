@@ -1,13 +1,16 @@
 ---
-title: "Papi Cris' Fortune"
-date: "2026-03-08"
-excerpt: "RSA với số nguyên tố nhỏ ẩn trong câu chuyện gia đình. Trial division phá vỡ toàn bộ trong dưới một giây."
-flag: "S3cr3t_to_p4pis_f0rtune"
+title: Papi Cris' Fortune
+date: '2026-03-08'
+excerpt: >-
+  RSA với số nguyên tố nhỏ ẩn trong câu chuyện gia đình. Trial division phá vỡ
+  toàn bộ trong dưới một giây.
+flag: S3cr3t_to_p4pis_f0rtune
 tags:
   - Crypto
   - RSA
   - Small Prime
   - Trial Division
+featured: /thumbnails/vintage-library.jpg
 ---
 
 

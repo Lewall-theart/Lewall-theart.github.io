@@ -1,14 +1,17 @@
 ---
-title: "Basic Encoding Soup"
-date: "2026-03-10"
-excerpt: "Ba lớp mặt nạ xếp chồng nhau — Hex, Base64, ROT13. Không cần toán học, chỉ cần đôi mắt biết nhìn."
-flag: "HackForely{hex_b64_rot13_classic}"
+title: Basic Encoding Soup
+date: '2026-03-10'
+excerpt: >-
+  Ba lớp mặt nạ xếp chồng nhau — Hex, Base64, ROT13. Không cần toán học, chỉ cần
+  đôi mắt biết nhìn.
+flag: 'HackForely{hex_b64_rot13_classic}'
 tags:
   - Crypto
   - Hex
   - Base64
   - ROT13
   - Encoding
+featured: /thumbnails/color-soup.jpg
 ---
 
 

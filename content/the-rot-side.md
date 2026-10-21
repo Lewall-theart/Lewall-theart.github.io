@@ -1,14 +1,17 @@
 ---
-title: "The ROT Side"
-date: "2026-03-11"
-excerpt: "ROT13 là trò trẻ con. Người anh em bí ẩn của nó xử lý toàn bộ printable ASCII — và đó mới là thứ đáng sợ thực sự."
-flag: "HackForge{rot47_the_other_rotation}"
+title: The ROT Side
+date: '2026-03-11'
+excerpt: >-
+  ROT13 là trò trẻ con. Người anh em bí ẩn của nó xử lý toàn bộ printable ASCII
+  — và đó mới là thứ đáng sợ thực sự.
+flag: 'HackForge{rot47_the_other_rotation}'
 tags:
   - Crypto
   - ROT47
   - Base32
   - Hex
   - Encoding
+featured: /thumbnails/cosmic-nebula.jpg
 ---
 
 
