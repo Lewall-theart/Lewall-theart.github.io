@@ -4,7 +4,7 @@ date: '2026-11-09'
 excerpt: >-
   Khám phá kỹ thuật giấu tin Append Steganography (EOF Injection) trong file ảnh PNG
   thông qua việc dịch ngược mã máy ELF 64-bit với IDA Pro, phục hồi thuật toán phân tán byte và giải mã flag.
-featured: /thumbnails/investigative-reversing-1.png
+featured: /thumbnails/investigative-reversing.jpg
 flag: 'academy{An0tha_1_8aa498d9}'
 tags:
   - Reverse Engineering
