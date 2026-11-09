@@ -7,6 +7,14 @@
     <language>vi</language>
     <atom:link href="https://lewall-theart.github.io/feed.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title><![CDATA[Investigative Reversing 1 – Bóc tách Steganography qua ELF64 & IDA Pro]]></title>
+      <link>https://lewall-theart.github.io/posts/investigative-reversing-1</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-1</guid>
+      <pubDate>Mon, 09 Nov 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Khám phá kỹ thuật giấu tin Append Steganography (EOF Injection) trong file ảnh PNG thông qua việc dịch ngược mã máy ELF 64-bit với IDA Pro, phục hồi thuật toán phân tán byte và giải mã flag.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
       <title><![CDATA[Adobe Keygen – Reverse Engineering]]></title>
       <link>https://lewall-theart.github.io/posts/adobe-keygen</link>
       <guid isPermaLink="true">https://lewall-theart.github.io/posts/adobe-keygen</guid>
