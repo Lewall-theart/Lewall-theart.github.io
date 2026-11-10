@@ -401,20 +401,7 @@ export default function MusicPlayer() {
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes vinylSpin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
 
-        .animate-vinyl-spin {
-          animation: vinylSpin 10s linear infinite;
-        }
-      `}</style>
     </>
   )
 }

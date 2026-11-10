@@ -624,3 +624,18 @@ body {
   height: auto;
   font-family: inherit !important;
 }
+
+
+/* Vinyl spin animation for MusicPlayer */
+@keyframes vinylSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-vinyl-spin {
+  animation: vinylSpin 10s linear infinite;
+}
