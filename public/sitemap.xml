@@ -34,6 +34,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://lewall-theart.github.io/posts/secure-password-database</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://lewall-theart.github.io/posts/investigative-reversing-1</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -123,6 +129,26 @@
   </url>
   <url>
     <loc>https://lewall-theart.github.io/tags/Multi-file%20Sharding</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Binary%20Exploitation</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Heartbleed</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Heap%20Out-of-Bounds%20Read</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/djb2</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

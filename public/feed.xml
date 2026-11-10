@@ -31,6 +31,14 @@
       <author>Lewall</author>
     </item>
     <item>
+      <title><![CDATA[Secure Password Database – Phân tích Lỗ hổng Heartbleed trên Heap và Thuật toán băm djb2]]></title>
+      <link>https://lewall-theart.github.io/posts/secure-password-database</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/secure-password-database</guid>
+      <pubDate>Tue, 10 Nov 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Hướng dẫn từng bước dịch ngược tệp nhị phân ELF 64-bit system.out trong IDA Pro: nhận diện phép giải mã XOR 0xAA, bóc tách thuật toán băm djb2, và khai thác lỗ hổng rò rỉ bộ nhớ Heap kiểu Heartbleed để giải mã flag.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
       <title><![CDATA[Investigative Reversing 1 – Bóc tách Steganography qua ELF64 & IDA Pro]]></title>
       <link>https://lewall-theart.github.io/posts/investigative-reversing-1</link>
       <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-1</guid>
