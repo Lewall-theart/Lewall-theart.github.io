@@ -28,6 +28,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://lewall-theart.github.io/posts/investigative-reversing-4</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://lewall-theart.github.io/posts/investigative-reversing-1</loc>
     <lastmod>2026-11-09</lastmod>
     <changefreq>monthly</changefreq>
@@ -112,6 +118,11 @@
   </url>
   <url>
     <loc>https://lewall-theart.github.io/tags/CTF</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Multi-file%20Sharding</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

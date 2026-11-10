@@ -23,6 +23,14 @@
       <author>Lewall</author>
     </item>
     <item>
+      <title><![CDATA[Investigative Reversing 4 – Bóc tách Interleaved LSB Đa tệp và Bẫy Đảo ngược Thứ tự]]></title>
+      <link>https://lewall-theart.github.io/posts/investigative-reversing-4</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-4</guid>
+      <pubDate>Tue, 10 Nov 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Phân tích chuyên sâu chiến thuật giấu tin phân mảnh đa tệp (Multi-file Sharding) kết hợp điều chế nhịp chu kỳ 12-byte (12-byte Cadence Modulation) và bẫy đảo ngược thứ tự thực thi trong chuỗi thử thách Investigative Reversing 4, dịch ngược mã máy x86-64 với IDA Pro và xây dựng công cụ khôi phục toàn vẹn 50 ký tự flag.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
       <title><![CDATA[Investigative Reversing 1 – Bóc tách Steganography qua ELF64 & IDA Pro]]></title>
       <link>https://lewall-theart.github.io/posts/investigative-reversing-1</link>
       <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-1</guid>
