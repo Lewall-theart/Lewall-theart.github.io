@@ -1,0 +1,105 @@
+{
+  "description": "Bảng thuật ngữ chuyên ngành Reverse Engineering / An toàn thông tin / CTF (VI - EN - JA)",
+  "rules": {
+    "en": "Use concise, active voice, idiomatic cybersecurity and CTF writeup phrasing. Keep register names, assembly mnemonics, function names, and variable names untranslated.",
+    "ja": "Use natural Japanese technical blog style (Qiita/Zenn CTF writeups). Use 'だ・である' copula. Prefer standard Katakana loanwords for cybersecurity/reverse engineering terms rather than awkward direct translation."
+  },
+  "terms": {
+    "dịch ngược": {
+      "en": "reverse engineering / reversing",
+      "ja": "リバースエンジニアリング / 逆解析"
+    },
+    "bóc tách mã máy": {
+      "en": "analyzing machine code / binary disassembly",
+      "ja": "機械語コードの解析 / 逆アセンブル"
+    },
+    "mã máy": {
+      "en": "machine code",
+      "ja": "機械語"
+    },
+    "mã giả": {
+      "en": "pseudocode / decompiled code",
+      "ja": "疑似コード / 逆コンパイルコード"
+    },
+    "giấu tin": {
+      "en": "steganography",
+      "ja": "ステガノグラフィ"
+    },
+    "phân tán byte": {
+      "en": "byte dispersion / byte scattering",
+      "ja": "バイト分散処理"
+    },
+    "tập tin thực thi": {
+      "en": "executable / binary",
+      "ja": "実行可能ファイル / バイナリ"
+    },
+    "thanh ghi": {
+      "en": "register",
+      "ja": "レジスタ"
+    },
+    "con trỏ": {
+      "en": "pointer",
+      "ja": "ポインタ"
+    },
+    "ngăn xếp": {
+      "en": "stack",
+      "ja": "スタック"
+    },
+    "vùng nhớ heap": {
+      "en": "heap",
+      "ja": "ヒープ"
+    },
+    "tràn bộ đệm": {
+      "en": "buffer overflow",
+      "ja": "バッファオーバーフロー"
+    },
+    "phân tích tĩnh": {
+      "en": "static analysis",
+      "ja": "静的解析"
+    },
+    "phân tích động": {
+      "en": "dynamic analysis",
+      "ja": "動的解析"
+    },
+    "điểm ngắt": {
+      "en": "breakpoint",
+      "ja": "ブレークポイント"
+    },
+    "vá mã": {
+      "en": "patching / binary patch",
+      "ja": "バイナリパッチ / パッチ適用"
+    },
+    "chuỗi nhị phân": {
+      "en": "binary string / byte sequence",
+      "ja": "バイト列 / バイナリデータ"
+    },
+    "giải mã": {
+      "en": "decrypt / decode",
+      "ja": "復号 / デコード"
+    },
+    "mã hóa": {
+      "en": "encrypt / encode",
+      "ja": "暗号化 / エンコード"
+    },
+    "thử thách": {
+      "en": "challenge",
+      "ja": "問題 / チャレンジ"
+    },
+    "đoạn mã": {
+      "en": "snippet / code snippet",
+      "ja": "コードスニペット"
+    },
+    "khai thác lỗ hổng": {
+      "en": "exploitation / exploit",
+      "ja": "脆弱性攻撃 / エクスプロイト"
+    },
+    "chuỗi format": {
+      "en": "format string",
+      "ja": "フォーマット文字列"
+    },
+    "dấu chấm hết tập tin": {
+      "en": "End of File (EOF)",
+      "ja": "ファイル終端 (EOF)"
+    }
+  }
+}

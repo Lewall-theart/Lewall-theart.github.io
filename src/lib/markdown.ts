@@ -167,26 +167,65 @@ const renderMarkdown = (content: string, slug?: string): RenderMarkdownResult =>
   }
 }
 
+export interface PostListTranslation {
+  title: string
+  excerpt: string | null
+}
+
 export function getAllPosts() {
   const fileNames = fs.readdirSync(postsDirectory)
   return fileNames
     .filter(fileName => {
-      return fileName.endsWith('.md') && !fs.statSync(path.join(postsDirectory, fileName)).isDirectory()
+      return (
+        fileName.endsWith('.md') &&
+        !fileName.endsWith('.en.md') &&
+        !fileName.endsWith('.ja.md') &&
+        !fs.statSync(path.join(postsDirectory, fileName)).isDirectory()
+      )
     })
     .map((fileName) => {
       const fullPath = path.join(postsDirectory, fileName)
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
+      const slug = fileName.replace(/\.md$/, '')
+
+      const translations: {
+        en?: PostListTranslation
+        ja?: PostListTranslation
+      } = {}
+
+      const enPath = path.join(postsDirectory, `${slug}.en.md`)
+      if (fs.existsSync(enPath)) {
+        try {
+          const enMatter = matter(fs.readFileSync(enPath, 'utf8'))
+          translations.en = {
+            title: enMatter.data.title || data.title,
+            excerpt: enMatter.data.excerpt || data.excerpt || null,
+          }
+        } catch {}
+      }
+
+      const jaPath = path.join(postsDirectory, `${slug}.ja.md`)
+      if (fs.existsSync(jaPath)) {
+        try {
+          const jaMatter = matter(fs.readFileSync(jaPath, 'utf8'))
+          translations.ja = {
+            title: jaMatter.data.title || data.title,
+            excerpt: jaMatter.data.excerpt || data.excerpt || null,
+          }
+        } catch {}
+      }
 
       return {
-        slug: fileName.replace(/\.md$/, ''),
+        slug,
         title: data.title,
         date: data.date,
         excerpt: data.excerpt,
         featured: resolveContentAssetUrl(data.featured || null),
         tags: normalizeTags(data.tags),
         draft: data.draft === true,
-        content
+        content,
+        translations
       }
     })
     .filter(post => {
@@ -196,12 +235,64 @@ export function getAllPosts() {
     .sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date))
 }
 
+export interface PostTranslation {
+  title: string
+  excerpt: string | null
+  html: string
+  headings: TocItem[]
+  stats: ReturnType<typeof calculatePostStats>
+}
+
 export function getPostBySlug(slug: string) {
   try {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
     const rendered = renderMarkdown(content, slug)
+
+    const translations: {
+      en?: PostTranslation
+      ja?: PostTranslation
+    } = {}
+    const availableLanguages: ('vi' | 'en' | 'ja')[] = ['vi']
+
+    const enPath = path.join(postsDirectory, `${slug}.en.md`)
+    if (fs.existsSync(enPath)) {
+      try {
+        const enContents = fs.readFileSync(enPath, 'utf8')
+        const { data: enData, content: enContent } = matter(enContents)
+        const enRendered = renderMarkdown(enContent, `${slug}.en`)
+        translations.en = {
+          title: enData.title || data.title,
+          excerpt: enData.excerpt || data.excerpt || null,
+          html: enRendered.html,
+          headings: enRendered.headings,
+          stats: calculatePostStats(enContent)
+        }
+        availableLanguages.push('en')
+      } catch (e) {
+        console.error(`[markdown] Error loading EN translation for ${slug}:`, e)
+      }
+    }
+
+    const jaPath = path.join(postsDirectory, `${slug}.ja.md`)
+    if (fs.existsSync(jaPath)) {
+      try {
+        const jaContents = fs.readFileSync(jaPath, 'utf8')
+        const { data: jaData, content: jaContent } = matter(jaContents)
+        const jaRendered = renderMarkdown(jaContent, `${slug}.ja`)
+        translations.ja = {
+          title: jaData.title || data.title,
+          excerpt: jaData.excerpt || data.excerpt || null,
+          html: jaRendered.html,
+          headings: jaRendered.headings,
+          stats: calculatePostStats(jaContent)
+        }
+        availableLanguages.push('ja')
+      } catch (e) {
+        console.error(`[markdown] Error loading JA translation for ${slug}:`, e)
+      }
+    }
 
     return {
       slug,
@@ -215,7 +306,9 @@ export function getPostBySlug(slug: string) {
       flag: data.flag || null,
       html: rendered.html,
       headings: rendered.headings,
-      content
+      content,
+      availableLanguages,
+      translations
     }
   } catch (error) {
     return null
@@ -234,7 +327,6 @@ export function getAllPages() {
     return []
   }
 }
-
 
 export function getPage(slug: string) {
   try {

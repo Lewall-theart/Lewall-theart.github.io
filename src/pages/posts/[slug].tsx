@@ -1,18 +1,33 @@
 import { getAllPosts, getPostBySlug } from '@/lib/markdown'
 import Layout, { type JsonLdObject } from '@/layouts/Layout'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import TableOfContents from '@/components/TableOfContents'
 import TagList from '@/components/TagList'
 import FlagReveal from '@/components/FlagReveal'
 import { siteConfig } from '@site-config'
 import type { TocItem } from '@/types/toc'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface RelatedPost {
   slug: string
   title: string | null
   excerpt: string | null
   tags: string[]
+}
+
+interface PostTranslationData {
+  title: string
+  excerpt: string | null
+  html: string
+  headings: TocItem[]
+  stats: {
+    wordCount: number
+    readingTimeMinutes: number
+    headingCount: number
+    codeBlockCount: number
+    imageCount: number
+  }
 }
 
 interface PostProps {
@@ -32,6 +47,11 @@ interface PostProps {
       headingCount: number
       codeBlockCount: number
       imageCount: number
+    }
+    availableLanguages?: ('vi' | 'en' | 'ja')[]
+    translations?: {
+      en?: PostTranslationData
+      ja?: PostTranslationData
     }
   }
   relatedPosts: RelatedPost[]
@@ -99,97 +119,60 @@ const parseDateValue = (value: string): Date | null => {
 }
 
 const formatDate = (
-  value: string | null | undefined,
+  dateValue: string | null,
   locale: string,
-  options?: Intl.DateTimeFormatOptions
-) => {
-  if (!value) return null
-  const parsed = parseDateValue(value)
-  if (!parsed) return null
-  return parsed.toLocaleDateString(locale, options)
+  options: Intl.DateTimeFormatOptions
+): string | null => {
+  if (!dateValue) return null
+  const parsed = parseDateValue(dateValue)
+  if (!parsed) return dateValue
+
+  try {
+    return new Intl.DateTimeFormat(locale, options).format(parsed)
+  } catch (err) {
+    console.error('Failed to format date:', err)
+    return dateValue
+  }
 }
 
-const toAbsoluteUrl = (pathOrUrl: string) => new URL(pathOrUrl, siteConfig.siteUrl).toString()
-
-const createPostJsonLd = (post: PostProps['post']): JsonLdObject[] => {
-  const postUrl = toAbsoluteUrl(`/posts/${post.slug}`)
-  const imageUrl = post.featured ? toAbsoluteUrl(post.featured) : null
-
-  return [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      headline: post.title,
-      description: post.excerpt || siteConfig.metaDescription,
-      datePublished: post.date,
-      author: {
-        '@type': 'Person',
-        name: siteConfig.author.name,
-        url: siteConfig.footer.social.githubUrl,
-      },
-      publisher: {
-        '@type': 'Person',
-        name: siteConfig.author.name,
-        url: siteConfig.footer.social.githubUrl,
-      },
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': postUrl,
-      },
-      url: postUrl,
-      ...(imageUrl ? { image: imageUrl } : {}),
-      ...(post.tags.length > 0 ? { keywords: post.tags } : {}),
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: siteConfig.siteUrl,
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: post.title,
-          item: postUrl,
-        },
-      ],
-    },
-  ]
+const toAbsoluteUrl = (pathOrUrl: string) => {
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl
+  return new URL(pathOrUrl, siteConfig.siteUrl).toString()
 }
 
 function RelatedPosts({ posts }: { posts: RelatedPost[] }) {
-  if (!posts.length) return null
+  if (!posts || posts.length === 0) return null
+
   return (
-    <section className="mt-12">
+    <section className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800">
       <h2 className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-6">
         Related Posts
       </h2>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {posts.map((p) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {posts.map((post) => (
           <Link
-            key={p.slug}
-            href={`/posts/${p.slug}`}
-            className="group block surface-panel rounded-xl p-5 hover:shadow-md transition-shadow"
+            key={post.slug}
+            href={`/posts/${post.slug}`}
+            className="group block p-4 rounded-xl surface-panel border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all duration-200"
           >
-            <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:underline underline-offset-2 mb-2 line-clamp-2">
-              {p.title}
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
+              {post.title}
             </h3>
-            {p.excerpt && (
-              <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{p.excerpt}</p>
+            {post.excerpt && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-3">
+                {post.excerpt}
+              </p>
             )}
-            {p.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1">
-                {p.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-1">
+              {post.tags.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           </Link>
         ))}
       </div>
@@ -198,9 +181,28 @@ function RelatedPosts({ posts }: { posts: RelatedPost[] }) {
 }
 
 export default function Post({ post, relatedPosts }: PostProps) {
-  const headings = post.headings
+  const { lang, setLang } = useLanguage()
+  const availableLangs = useMemo(() => post.availableLanguages || ['vi'], [post.availableLanguages])
   const contentRef = useRef<HTMLDivElement>(null)
   const [progress, setProgress] = useState(0)
+
+  // Use global language if available for this post, else fallback to 'vi'
+  const currentLang = availableLangs.includes(lang) ? lang : 'vi'
+
+  const handleLangChange = (newLang: 'vi' | 'en' | 'ja') => {
+    setLang(newLang)
+  }
+
+  // Active translation
+  const activeData = (currentLang !== 'vi' && post.translations?.[currentLang])
+    ? post.translations[currentLang]!
+    : post
+
+  const activeTitle = activeData.title
+  const activeExcerpt = activeData.excerpt
+  const activeContent = activeData.html
+  const activeHeadings = activeData.headings
+  const activeStats = activeData.stats
 
   useEffect(() => {
     const handleScroll = () => {
@@ -263,8 +265,7 @@ export default function Post({ post, relatedPosts }: PostProps) {
       const scopedButtons = container.querySelectorAll<HTMLButtonElement>('[data-copy-button="true"]')
       scopedButtons.forEach(button => button.remove())
     }
-  }, [post.html])
-
+  }, [activeContent])
 
   useEffect(() => {
     const container = contentRef.current
@@ -278,92 +279,179 @@ export default function Post({ post, relatedPosts }: PostProps) {
           startOnLoad: false,
           theme: isDark ? 'dark' : 'default',
           securityLevel: 'loose',
-          fontFamily: 'JetBrains Mono, monospace',
         })
-        mermaid.run({
-          nodes: Array.from(mermaidNodes) as HTMLElement[],
-        }).catch((err) => {
-          console.warn('Mermaid render error:', err)
-        })
+        mermaid.run({ nodes: Array.from(mermaidNodes) as HTMLElement[] })
       })
     }
-  }, [post.html])
+  }, [activeContent])
 
-  const content = post.html
-  const jsonLd = createPostJsonLd(post)
+  const publishedTime = post.date ? new Date(post.date).toISOString() : undefined
+
+  const articleJsonLd: JsonLdObject = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: activeTitle,
+    description: activeExcerpt || siteConfig.metaDescription,
+    url: toAbsoluteUrl(`/posts/${post.slug}`),
+    datePublished: publishedTime || '',
+    dateModified: publishedTime || '',
+    author: {
+      '@type': 'Person',
+      name: siteConfig.author.name,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.name,
+      logo: {
+        '@type': 'ImageObject',
+        url: toAbsoluteUrl('/logo-light.svg'),
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': toAbsoluteUrl(`/posts/${post.slug}`),
+    },
+    keywords: post.tags.join(', '),
+  }
 
   return (
-    <Layout title={post.title} jsonLd={jsonLd}>
-      <div style={{ width: progress + '%' }} className="fixed top-16 left-0 h-0.5 bg-neutral-900 dark:bg-white z-40 transition-[width] duration-100" aria-hidden="true" />
-      <article className="max-w-[1600px] mx-auto px-4 lg:px-8 rise-in" style={{ animationDelay: '60ms' }}>
-        <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-8">
+    <Layout
+      title={activeTitle}
+      description={activeExcerpt || undefined}
+      image={post.featured || undefined}
+      canonicalUrl={`/posts/${post.slug}`}
+      type="article"
+      publishedTime={publishedTime}
+      jsonLd={articleJsonLd}
+    >
+      {/* Reading progress bar */}
+      <div
+        className="fixed top-0 left-0 h-[2px] bg-gradient-to-r from-blue-500 to-indigo-500 z-50 transition-all duration-75"
+        style={{ width: `${progress}%` }}
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+
+      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Main content */}
           <div className="flex-1 max-w-4xl min-w-0">
             <div className="mb-12">
               <Link href="/" className="text-xs font-mono uppercase tracking-widest text-neutral-600 hover:text-neutral-900 mb-8 inline-block dark:text-neutral-400 dark:hover:text-white">
-                {siteConfig.post.backToHomeLabel}
+                {currentLang === 'ja' ? '← ホームに戻る' : currentLang === 'en' ? '← Back to home' : '← Trang chủ'}
               </Link>
               <nav aria-label="Breadcrumb">
                 <ol className="text-xs font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 mb-4">
-                  <li><Link href="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Home</Link></li>
+                  <li><Link href="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{currentLang === 'ja' ? 'ホーム' : currentLang === 'en' ? 'Home' : 'Trang chủ'}</Link></li>
                   <li aria-hidden="true">/</li>
-                  <li aria-current="page" className="truncate">{post.title}</li>
+                  <li aria-current="page" className="truncate">{activeTitle}</li>
                 </ol>
               </nav>
-              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mb-4 text-neutral-900 dark:text-white">{post.title}</h1>
+
+              {/* Language Switcher Bar */}
+              {availableLangs.length > 1 && (
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Language:
+                  </span>
+                  <div className="inline-flex rounded-lg border border-neutral-200 dark:border-neutral-800 p-1 bg-neutral-100/70 dark:bg-neutral-900/60 backdrop-blur-sm">
+                    <button
+                      type="button"
+                      onClick={() => handleLangChange('vi')}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                        currentLang === 'vi'
+                          ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-semibold'
+                          : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                      }`}
+                    >
+                      🇻🇳 Tiếng Việt
+                    </button>
+                    {availableLangs.includes('en') && (
+                      <button
+                        type="button"
+                        onClick={() => handleLangChange('en')}
+                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                          currentLang === 'en'
+                            ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-semibold'
+                            : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                        }`}
+                      >
+                        🇬🇧 English
+                      </button>
+                    )}
+                    {availableLangs.includes('ja') && (
+                      <button
+                        type="button"
+                        onClick={() => handleLangChange('ja')}
+                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                          currentLang === 'ja'
+                            ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-semibold'
+                            : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                        }`}
+                      >
+                        🇯🇵 日本語
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mb-4 text-neutral-900 dark:text-white">{activeTitle}</h1>
               {formattedDate ? (
                 <time className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   {formattedDate}
                 </time>
               ) : null}
               <TagList tags={post.tags} className="mt-3" />
-              <ShareButtons url={toAbsoluteUrl(`/posts/${post.slug}`)} title={post.title} />
+              <ShareButtons url={toAbsoluteUrl(`/posts/${post.slug}`)} title={activeTitle} />
             </div>
 
             <section className="mb-8">
               <div className="surface-panel rounded-xl p-5">
                 <h2 className="text-xs font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-4">
-                  {siteConfig.post.statsTitle}
+                  {currentLang === 'ja' ? '記事統計' : currentLang === 'en' ? 'Article stats' : 'Thống kê bài viết'}
                 </h2>
                 <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   <div>
                     <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                      {siteConfig.post.statsLabels.readTime}
+                      {currentLang === 'ja' ? '読了時間' : currentLang === 'en' ? 'Read time' : 'Thời gian đọc'}
                     </dt>
                     <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-                      {post.stats.readingTimeMinutes} {siteConfig.post.statsLabels.minutes}
+                      {activeStats.readingTimeMinutes} {currentLang === 'ja' ? '分' : 'min'}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                      {siteConfig.post.statsLabels.words}
+                      {currentLang === 'ja' ? '文字数' : currentLang === 'en' ? 'Words' : 'Số từ'}
                     </dt>
                     <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-                      {post.stats.wordCount.toLocaleString(siteConfig.formatting.numberLocale)}
+                      {activeStats.wordCount.toLocaleString(siteConfig.formatting.numberLocale)}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                      {siteConfig.post.statsLabels.headings}
+                      {currentLang === 'ja' ? '見出し' : currentLang === 'en' ? 'Headings' : 'Mục tiêu đề'}
                     </dt>
                     <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-                      {post.stats.headingCount}
+                      {activeStats.headingCount}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                      {siteConfig.post.statsLabels.codeBlocks}
+                      {currentLang === 'ja' ? 'コードブロック' : currentLang === 'en' ? 'Code blocks' : 'Khối mã'}
                     </dt>
                     <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-                      {post.stats.codeBlockCount}
+                      {activeStats.codeBlockCount}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                      {siteConfig.post.statsLabels.images}
+                      {currentLang === 'ja' ? '画像' : currentLang === 'en' ? 'Images' : 'Hình ảnh'}
                     </dt>
                     <dd className="mt-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-                      {post.stats.imageCount}
+                      {activeStats.imageCount}
                     </dd>
                   </div>
                 </dl>
@@ -371,7 +459,7 @@ export default function Post({ post, relatedPosts }: PostProps) {
             </section>
 
             <div className="prose mx-auto surface-panel rounded-xl p-6 dark:prose-invert text-neutral-900 dark:text-neutral-100">
-              <div ref={contentRef} dangerouslySetInnerHTML={{ __html: content }} />
+              <div ref={contentRef} dangerouslySetInnerHTML={{ __html: activeContent }} />
             </div>
             {post.flag && <FlagReveal flag={post.flag} />}
 
@@ -379,7 +467,7 @@ export default function Post({ post, relatedPosts }: PostProps) {
           </div>
 
           {/* Table of Contents */}
-          <TableOfContents headings={headings} />
+          <TableOfContents headings={activeHeadings} />
         </div>
       </article>
     </Layout>
@@ -425,6 +513,5 @@ export async function getStaticProps({
 
   return {
     props: { post, relatedPosts },
-    
   }
 }

@@ -11,6 +11,7 @@
     "test:coverage": "jest --coverage",
     "lint": "next lint",
     "clean": "rimraf .next node_modules",
+    "translate": "node scripts/translate.mjs",
     "prebuild": "node scripts/generate-static-feeds.js"
   },
   "dependencies": {

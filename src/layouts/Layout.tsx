@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { siteConfig } from '@site-config'
 import SearchModal, { type SearchPost } from '@/components/SearchModal'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { useLanguage } from '@/context/LanguageContext'
 
 export type JsonLdValue = string | number | boolean | null | JsonLdValue[] | { [key: string]: JsonLdValue }
 export type JsonLdObject = { [key: string]: JsonLdValue }
@@ -17,6 +19,12 @@ interface LayoutProps {
   publishedTime?: string
   jsonLd?: JsonLdObject | JsonLdObject[]
   searchPosts?: SearchPost[]
+}
+
+const navLabels: Record<string, { vi: string; en: string; ja: string }> = {
+  Home: { vi: 'Trang chủ', en: 'Home', ja: 'ホーム' },
+  Blog: { vi: 'Bài viết', en: 'Blog', ja: 'ブログ' },
+  About: { vi: 'Giới thiệu', en: 'About', ja: '紹介' },
 }
 
 const serializeJsonLd = (item: JsonLdObject) => JSON.stringify(item).replace(/</g, '\\u003c')
@@ -37,14 +45,13 @@ export default function Layout({
   jsonLd,
   searchPosts = [],
 }: LayoutProps) {
+  const { lang } = useLanguage()
   const [isDark, setIsDark] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const isExternalLink = (href: string) =>
     href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')
 
-  // Sync React state from the DOM class set by _document.tsx's inline script.
-  // Do NOT manipulate classList here — _document.tsx already did it before first paint.
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'))
   }, [])
@@ -141,24 +148,30 @@ export default function Layout({
                 />
               </Link>
 
-              <div className="flex items-center space-x-6">
-                {siteConfig.nav.links.map((link) =>
-                  isExternalLink(link.href) ? (
+              <div className="flex items-center space-x-3 sm:space-x-5">
+                {siteConfig.nav.links.map((link) => {
+                  const localizedLabel = navLabels[link.label]?.[lang] || link.label
+                  return isExternalLink(link.href) ? (
                     <a
                       key={link.label}
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="nav-link"
+                      className="nav-link text-xs sm:text-sm"
                     >
-                      {link.label}
+                      {localizedLabel}
                     </a>
                   ) : (
-                    <Link key={link.label} href={link.href} className="nav-link">
-                      {link.label}
+                    <Link key={link.label} href={link.href} className="nav-link text-xs sm:text-sm">
+                      {localizedLabel}
                     </Link>
                   )
-                )}
+                })}
+
+                {/* Global Language Switcher */}
+                <LanguageSwitcher />
+
+                {/* Search */}
                 <button
                   onClick={() => setIsSearchOpen(true)}
                   aria-label="Open search"
@@ -178,6 +191,8 @@ export default function Layout({
                     <path d="M21 21l-4.35-4.35" />
                   </svg>
                 </button>
+
+                {/* Dark mode */}
                 <button
                   onClick={toggleDarkMode}
                   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

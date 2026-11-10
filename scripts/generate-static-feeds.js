@@ -15,10 +15,10 @@ Sitemap: ${siteUrl}/sitemap.xml
 `;
 fs.writeFileSync('public/robots.txt', robotsTxt, 'utf8');
 
-// 2. Read posts
+// 2. Read posts (skip translation files from main listing)
 const contentDir = 'content';
 const posts = fs.readdirSync(contentDir)
-  .filter(f => f.endsWith('.md'))
+  .filter(f => f.endsWith('.md') && !f.endsWith('.en.md') && !f.endsWith('.ja.md'))
   .map(f => {
     const { data } = matter(fs.readFileSync(path.join(contentDir, f), 'utf8'));
     return {
