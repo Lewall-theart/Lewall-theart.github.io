@@ -234,35 +234,76 @@ Vòng lặp `k` trong hàm `main` chạy tăng dần từ $0 \to 7$:
 
 $$C'_j = \sum_{k=0}^{7} (B_k \ \& \ 1) \cdot 2^k = \bigvee_{k=0}^{7} \Big((B_k \ \& \ 1) \ll k\Big)$$
 
-### 4.3. Sơ đồ Kiến trúc Đảo ngược (Reverse Data-Flow Pipeline)
+---
 
-```mermaid
-flowchart TD
-    subgraph STAGE1 ["Giai đoạn 1: Bỏ qua Vùng đệm An toàn"]
-        IN["Tệp encoded.bmp"] --> SEEK["Seek tới Offset 2000 (0x7D0)"]
-    end
+## 5. Hướng dẫn Chi tiết Từng bước Bóc tách Dữ liệu (Step-by-Step Manual Extraction)
 
-    subgraph STAGE2 ["Giai đoạn 2: Trích xuất Luồng Bit thô"]
-        SEEK --> READ["Đọc chính xác 50 ký tự × 8 bit = 400 bytes"]
-        READ --> LSB["Lấy LSB của từng byte: bit = byte & 1"]
-    end
+Để biến lý thuyết thành kỹ năng điều tra thực tế, dưới đây là quy trình bóc tách thủ công từng byte dữ liệu trực tiếp từ tệp `encoded.bmp`.
 
-    subgraph STAGE3 ["Giai đoạn 3: Tái tạo Ký tự (Little-Endian)"]
-        LSB --> SLICE["Chia 400 bit thành 50 khối (8 bit/khối)"]
-        SLICE --> REBUILD["val = sum(bit[k] << k) với k = 0..7"]
-    end
+### 5.1. Bước 1: Xác định Tọa độ Vùng nhúng trên Hex Editor (Offset Localization)
+Mở tệp `encoded.bmp` bằng Hex Editor (HxD, 010 Editor hoặc Hex View của IDA):
+- **Điểm bắt đầu:** Bỏ qua 2000 byte đầu tiên $\rightarrow$ Nhảy đến offset:
+  $$2000_{10} = \mathbf{0x7D0}_{16}$$
+- **Phạm vi dữ liệu ẩn:** Flag gồm 50 ký tự, mỗi ký tự chiếm 8 byte ảnh:
+  $$\text{Payload Size} = 50 \times 8 = 400 \text{ bytes}$$
+- **Vùng dữ liệu cần bóc tách:** Từ offset $\mathbf{0x7D0}$ đến $\mathbf{0x95F}$ ($2000 \to 2399$ decimal).
 
-    subgraph STAGE4 ["Giai đoạn 4: Đảo ngược Phép toán & Trích xuất Flag"]
-        REBUILD --> RESTORE["char = chr(val + 5)"]
-        RESTORE --> OUT["academy{n3xt_0n30000000000000000000000000b2a84f53}"]
-    end
+### 5.2. Bước 2: Phẫu thuật 8 byte đầu tiên (Trích xuất vi mô `flag[0]`)
+Di chuyển đến offset `0x7D0`, chúng ta đọc được 8 byte liên tiếp sau:
+
 ```
+Offset          Hex View                     ASCII
+000007D0        E8 E8 E9 E9 E9 E8 E9 E8      ........
+```
+
+Tiến hành phân tích chi tiết từng byte để bóc tách từng bit theo thứ tự $k = 0 \dots 7$:
+
+| Vị trí bit ($k$) | Offset | Byte Hex | Biểu diễn Nhị phân | Phép toán LSB (`byte & 1`) | Trọng số ($2^k$) | Giá trị đóng góp |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Bit 0** | `0x7D0` | `0xE8` | `1110 1000` | **`0`** | $2^0 = 1$ | $0 \times 1 = 0$ |
+| **Bit 1** | `0x7D1` | `0xE8` | `1110 1000` | **`0`** | $2^1 = 2$ | $0 \times 2 = 0$ |
+| **Bit 2** | `0x7D2` | `0xE9` | `1110 1001` | **`1`** | $2^2 = 4$ | $1 \times 4 = 4$ |
+| **Bit 3** | `0x7D3` | `0xE9` | `1110 1001` | **`1`** | $2^3 = 8$ | $1 \times 8 = 8$ |
+| **Bit 4** | `0x7D4` | `0xE9` | `1110 1001` | **`1`** | $2^4 = 16$ | $1 \times 16 = 16$ |
+| **Bit 5** | `0x7D5` | `0xE8` | `1110 1000` | **`0`** | $2^5 = 32$ | $0 \times 32 = 0$ |
+| **Bit 6** | `0x7D6` | `0xE9` | `1110 1001` | **`1`** | $2^6 = 64$ | $1 \times 64 = 64$ |
+| **Bit 7** | `0x7D7` | `0xE8` | `1110 1000` | **`0`** | $2^7 = 128$ | $0 \times 128 = 0$ |
+
+Thực hiện cộng dồn giá trị nhị phân thu được:
+$$\text{Val} = 0 + 0 + 4 + 8 + 16 + 0 + 64 + 0 = \mathbf{92} \quad (\text{Hex: } 0x5C, \ \text{Binary: } 01011100_2)$$
+
+Áp dụng đảo ngược phép biến đổi số học:
+$$\text{flag}[0] = \text{Val} + 5 = 92 + 5 = \mathbf{97} \ \longrightarrow \ \mathbf{\text{'a'}}$$
+
+Ký tự đầu tiên hoàn toàn trùng khớp với định dạng tiền tố `academy{`!
+
+### 5.3. Bước 3: Bảng Ma trận Bóc tách Mẫu 8 Ký tự Đầu Tiên (`academy{`)
+Áp dụng phương pháp trên cho 64 byte tiếp theo (từ `0x7D0` đến `0x80F`), ta xây dựng được ma trận ánh xạ 8 ký tự tiền tố:
+
+| Chỉ số | Phạm vi Offset | Chuỗi 8 Byte Hex đọc từ ảnh | Mảng LSB (`k=0..7`) | Giá trị Val | Công thức $+5$ | Ký tự giải mã |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **0** | `0x07D0 - 0x07D7` | `E8 E8 E9 E9 E9 E8 E9 E8` | `[0, 0, 1, 1, 1, 0, 1, 0]` | `92` (`0x5C`) | $92 + 5 = 97$ | **`a`** |
+| **1** | `0x07D8 - 0x07DF` | `E8 E9 E9 E9 E9 E8 E9 E8` | `[0, 1, 1, 1, 1, 0, 1, 0]` | `94` (`0x5E`) | $94 + 5 = 99$ | **`c`** |
+| **2** | `0x07E0 - 0x07E7` | `E8 E8 E9 E9 E9 E8 E9 E8` | `[0, 0, 1, 1, 1, 0, 1, 0]` | `92` (`0x5C`) | $92 + 5 = 97$ | **`a`** |
+| **3** | `0x07E8 - 0x07EF` | `E9 E9 E9 E9 E9 E8 E9 E8` | `[1, 1, 1, 1, 1, 0, 1, 0]` | `95` (`0x5F`) | $95 + 5 = 100$ | **`d`** |
+| **4** | `0x07F0 - 0x07F7` | `E8 E8 E8 E8 E8 E9 E9 E8` | `[0, 0, 0, 0, 0, 1, 1, 0]` | `96` (`0x60`) | $96 + 5 = 101$ | **`e`** |
+| **5** | `0x07F8 - 0x07FF` | `E8 E8 E8 E9 E8 E9 E9 E8` | `[0, 0, 0, 1, 0, 1, 1, 0]` | `104` (`0x68`) | $104 + 5 = 109$ | **`m`** |
+| **6** | `0x0800 - 0x0807` | `E8 E8 4F 4E 4F 4F 4F E8` | `[0, 0, 1, 0, 1, 1, 1, 0]` | `116` (`0x74`) | $116 + 5 = 121$ | **`y`** |
+| **7** | `0x0808 - 0x080F` | `E8 E9 E9 E8 E9 E9 E9 E8` | `[0, 1, 1, 0, 1, 1, 1, 0]` | `118` (`0x76`) | $118 + 5 = 123$ | **`{`** |
+
+### 5.4. Các cạm bẫy kỹ thuật thường gặp (Common Pitfalls & Gotchas)
+1. **Lỗi đảo ngược thứ tự bit (Endianness Mistake):**
+   Nếu người phân tích dùng công thức gom bit kiểu Big-Endian: `val = (val << 1) | bit`, kết quả byte thu được sẽ bị đảo ngược thứ tự bit (ví dụ `01011100b` biến thành `00111010b`), dẫn tới ký tự giải mã ra hoàn toàn là rác (garbage text).
+2. **Lỗi lệch vị trí đọc (Off-by-one / Missing Header Offset):**
+   Nếu quên bỏ qua 2000 byte header và đọc ngay từ byte `0`, luồng bit trích xuất sẽ là dữ liệu header của file BMP chứ không phải dữ liệu nhúng của flag.
+3. **Lỗi xử lý kiểu dữ liệu Signed vs Unsigned:**
+   Trong ngôn ngữ C, kiểu `char` mặc định có thể là signed (từ -128 đến 127). Nếu không ép kiểu `unsigned char` hoặc xử lý cẩn thận trong Python, các phép toán `>>` có thể bị tràn bit dấu (Sign extension).
 
 ---
 
-## 5. Xây dựng Công cụ Khôi phục Tự động (Proof of Concept / Exploit Script)
+## 6. Xây dựng Công cụ Khôi phục Tự động (`solve.py`)
 
-Hiện thực hóa toàn bộ logic trên thành script Python hoàn chỉnh:
+Sau khi đã kiểm chứng chính xác giải thuật trên từng byte mẫu, ta tự động hóa toàn bộ quá trình bằng Python:
 
 ```python
 #!/usr/bin/env python3
@@ -339,11 +380,11 @@ if __name__ == "__main__":
 
 ---
 
-## 6. Dấu vết Điều tra (Forensic Artifacts) & Kỹ thuật Phát hiện (Steganalysis)
+## 7. Dấu vết Điều tra (Forensic Artifacts) & Kỹ thuật Phát hiện (Steganalysis)
 
 Dưới góc độ phòng thủ và điều tra số (DFIR), nếu đứng trước một tệp ảnh nghi ngờ mà **hoàn toàn không có binary thực thi**, chuyên gia có thể áp dụng các kỹ thuật sau để phát hiện và cô lập kênh truyền bí mật:
 
-### 6.1. Tấn công Kiểm định Phân bố Cặp giá trị ($\chi^2$ Attack on PoVs)
+### 7.1. Tấn công Kiểm định Phân bố Cặp giá trị ($\chi^2$ Attack on PoVs)
 Trong ảnh tự nhiên chưa qua can thiệp, tần suất xuất hiện của các cặp giá trị kênh màu liền kề $(2k, 2k+1)$ (được gọi là *Pairs of Values - PoVs*, ví dụ cặp giá trị 100 và 101) tuân theo phân phối gradient tự nhiên của khung cảnh và hiếm khi bằng nhau.
 
 Khi một thuật toán LSB tuần tự nhúng dữ liệu ngẫu nhiên (hoặc dữ liệu văn bản đã qua biến đổi) vào bit $b_0$, xác suất để một giá trị chẵn chuyển thành lẻ hoặc ngược lại là $\approx 50\%$. Hiện tượng này kéo tần suất xuất hiện của $2k$ và $2k+1$ về trạng thái cân bằng tiệm cận:
@@ -354,7 +395,7 @@ Bằng cách áp dụng kiểm định thống kê Chi-Square ($\chi^2$) theo t�
 - Tại các vùng ảnh bình thường: Giá trị $p\text{-value} \approx 0$ (bác bỏ giả thuyết có giấu tin).
 - Tại vùng từ offset **2000 đến 2400**: Giá trị $p\text{-value}$ đột ngột tiệm cận **1.0** (xác nhận bất thường mật mã học cực cao). Dấu hiệu này cho phép điều tra viên khoanh vùng chính xác vị trí payload mà không cần dịch ngược mã máy.
 
-### 6.2. Trực quan hóa Mặt nạ Bit LSB (LSB Bit-plane Slicing)
+### 7.2. Trực quan hóa Mặt nạ Bit LSB (LSB Bit-plane Slicing)
 Bằng cách cô lập riêng bit thấp nhất của từng pixel và nhân với 255:
 
 $$\text{Mask}(x, y) = (\text{Pixel}(x, y) \ \& \ 1) \times 255$$
@@ -363,12 +404,12 @@ Trình hiển thị ảnh mặt nạ sẽ bộc lộ:
 - Phần pixel thông thường xuất hiện dưới dạng nhiễu trắng ngẫu nhiên (White Noise) do nhiễu cảm biến ảnh (Sensor noise).
 - Vùng bị nhúng dữ liệu (400 bytes tương đương 133 pixels RGB) sẽ tạo thành một vệt ngang có cấu trúc cục bộ khác biệt rõ rệt so với toàn bộ phần còn lại của bức ảnh.
 
-### 6.3. Mối liên hệ Thực tiễn trong Phân tích Mã độc Hiện đại (Stegware & APTs)
+### 7.3. Mối liên hệ Thực tiễn trong Phân tích Mã độc Hiện đại (Stegware & APTs)
 Kỹ thuật nhúng payload vào các kênh màu LSB của ảnh định dạng BMP/PNG là vũ khí quen thuộc của các chiến dịch tấn công có chủ đích (APT):
 - **Stegoloader (Gatak Malware):** Ẩn giấu các module mã độc Portable Executable (PE) hoàn chỉnh bên trong các file ảnh kỹ thuật số trên các trang chia sẻ ảnh công cộng. Khi mã độc dropper thực thi trên máy nạn nhân, nó tải ảnh về, trích xuất LSB để lấy payload và thực thi trực tiếp trên bộ nhớ (In-memory execution) nhằm né tránh sự phát hiện của EDR/Antivirus.
 - **OceanLotus (APT32):** Nhúng cấu hình máy chủ điều khiển (C2 Configuration) và shellcode giai đoạn hai vào các icon (.ico) và ảnh BMP để vượt qua các tường lửa kiểm tra gói tin sâu (Deep Packet Inspection - DPI).
 
-### 6.4. Biện pháp Phòng ngự: Content Disarm and Reconstruction (CDR)
+### 7.4. Biện pháp Phòng ngự: Content Disarm and Reconstruction (CDR)
 Để triệt tiêu hoàn toàn nguy cơ rò rỉ dữ liệu hoặc tải mã độc qua các kênh giấu tin LSB:
 1. **Áp dụng công nghệ CDR tại Mail Gateway & Web Proxy:** Tự động giải mã hình ảnh thành mảng pixel thô và nén lại (Re-encoding/Re-rasterization) sang định dạng khác (ví dụ: chuyển BMP sang WebP/JPEG nén có tổn hao). Quá trình tái lượng tử hóa (Quantization) sẽ phá hủy triệt để mọi dữ liệu giấu tại các bit trọng số thấp mà không làm suy giảm trải nghiệm thị giác của người dùng.
 2. **Kiểm soát dung lượng và tỷ lệ nén:** Thiết lập giám sát cảnh báo đối với các tệp tin hình ảnh không nén (như BMP) có dung lượng bất thường được truyền tải ra các dải IP ngoại vi ngoài giờ hành chính.
