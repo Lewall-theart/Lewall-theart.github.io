@@ -7,6 +7,14 @@
     <language>vi</language>
     <atom:link href="https://lewall-theart.github.io/feed.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title><![CDATA[Investigative Reversing 2 – Khôi phục LSB Steganography và Biến đổi Bit qua IDA Pro]]></title>
+      <link>https://lewall-theart.github.io/posts/investigative-reversing-2</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-2</guid>
+      <pubDate>Tue, 10 Nov 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Phân tích chuyên sâu kỹ thuật giấu tin LSB Steganography trong tệp ảnh BMP kết hợp biến đổi số học và thứ tự bit Little-Endian bằng IDA Pro, từ đó xây dựng công cụ trích xuất flag tự động bằng Python.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
       <title><![CDATA[Investigative Reversing 1 – Bóc tách Steganography qua ELF64 & IDA Pro]]></title>
       <link>https://lewall-theart.github.io/posts/investigative-reversing-1</link>
       <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-1</guid>
