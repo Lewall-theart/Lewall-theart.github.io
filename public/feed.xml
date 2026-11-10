@@ -15,6 +15,14 @@
       <author>Lewall</author>
     </item>
     <item>
+      <title><![CDATA[Investigative Reversing 3 – Vượt bẫy Mất đồng bộ Khung bit trong Interleaved LSB Steganography]]></title>
+      <link>https://lewall-theart.github.io/posts/investigative-reversing-3</link>
+      <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-3</guid>
+      <pubDate>Tue, 10 Nov 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Khám phá kỹ thuật giấu tin LSB Steganography xen kẽ (Interleaved LSB) kết hợp cơ chế gây mất đồng bộ khung bit (Framing Error) trong tệp ảnh BMP, dịch ngược mã máy ELF64 với IDA Pro và xây dựng công cụ trích xuất flag tự động bằng Python.]]></description>
+      <author>Lewall</author>
+    </item>
+    <item>
       <title><![CDATA[Investigative Reversing 1 – Bóc tách Steganography qua ELF64 & IDA Pro]]></title>
       <link>https://lewall-theart.github.io/posts/investigative-reversing-1</link>
       <guid isPermaLink="true">https://lewall-theart.github.io/posts/investigative-reversing-1</guid>
