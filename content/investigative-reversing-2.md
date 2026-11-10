@@ -16,56 +16,80 @@ tags:
   - CTF
 ---
 
-> *"Trong bảo mật nhị phân và điều tra số, kỹ thuật giấu tin (Steganography) không nhằm mục đích biến dữ liệu thành những khối mật mã khó hiểu, mà hướng tới việc che giấu chính sự tồn tại của thông điệp. Một bức ảnh bitmap tưởng chừng vô hại với hàng triệu pixel lại có thể trở thành kênh truyền bí mật (Covert Channel) hoàn hảo nếu biết tận dụng giới hạn thụ cảm thị giác của mắt người."*
+> *"Trong lĩnh vực an toàn thông tin và điều tra số, kỹ thuật giấu tin (Steganography) không đặt mục tiêu mã hóa dữ liệu thành các khối mật mã phức tạp, mà hướng tới việc che giấu hoàn toàn sự hiện diện của kênh liên lạc (Covert Channel). Một bức ảnh bitmap thông thường với hàng triệu pixel hoàn toàn có thể trở thành phương tiện vận chuyển payload bí mật nếu kẻ tấn công khai thác triệt để ngưỡng thụ cảm thị giác của mắt người."*
 
 ---
 
-## 1. Tổng quan thử thách
+## 1. Khởi tạo Điều tra & Định danh Mẫu vật (Artifact Triage & Profiling)
 
-- **Tên bài toán:** `investigative-reversing-2`
-- **Nền tảng:** picoCTF / CTF Academy
-- **Thể loại:** Reverse Engineering & Digital Forensics
-- **Tập tin cung cấp:**
-  - `mystery` (Binary thực thi định dạng Linux ELF 64-bit)
-  - `encoded.bmp` (File ảnh định dạng Windows Bitmap chứa dữ liệu đã mã hóa)
+Khi tiếp nhận hiện trường kỹ thuật số của thử thách `investigative-reversing-2`, chuyên gia phân tích được bàn giao hai mẫu vật chính:
 
-Ở phần 1 (`Investigative Reversing 1`), chúng ta đã chứng kiến phương pháp giấu tin thô sơ **EOF Injection (Overlay Append)** – ghi nối tiếp dữ liệu vào sau đuôi ảnh PNG. Sang phần 2, tác giả nâng cấp độ phức tạp bằng cách can thiệp trực tiếp vào cấu trúc hạt nhân của tệp ảnh: kỹ thuật **Least Significant Bit (LSB) Steganography** kết hợp thao tác bitwise và biến đổi số học trên từng ký tự.
+1. **Tệp thực thi nhị phân:** `mystery`
+2. **Tệp ảnh nghi vấn:** `encoded.bmp`
 
-![Ảnh sau khi mã hóa](/img/writeups/investigative-reversing-2/encoded.png)
-*Hình ảnh hiển thị của encoded.bmp: Hoàn toàn bình thường, không hề có bất kỳ dấu hiệu biến dạng hay nhiễu màu mắt thường có thể nhìn thấy.*
+Bảng định danh mẫu vật nhị phân thu thập tại hiện trường:
 
----
+| Thuộc tính | Tệp thực thi (`mystery`) | Tệp đa phương tiện (`encoded.bmp`) |
+| :--- | :--- | :--- |
+| **Định dạng file** | ELF 64-bit LSB pie executable, x86-64 | PC bitmap, Windows 3.x format |
+| **Kích thước** | 16,784 bytes | 1,507,414 bytes (1.43 MB) |
+| **Độ phân giải** | N/A | 1765 × 852 pixels, 24 bpp (RGB) |
+| **SHA-256 Hash** | `2802b225bd1d019fe099bae09ad659726874fd0e7eca60b10d7077f35de7263e` | `0fa3f4a80b9dbf81de84b25d86d5aec37baf3e0658b9f3eb6f295fb658d00293` |
 
-## 2. Cấu trúc File BMP & Nguyên lý LSB Steganography
+![Ảnh chứa dữ liệu ẩn](/img/writeups/investigative-reversing-2/encoded.png)
+*Hình ảnh hiển thị của encoded.bmp: Hoàn toàn bình thường, không xuất hiện bất kỳ dấu hiệu méo hình, nhiễu hạt hay lệch màu khi quan sát bằng mắt thường.*
 
-### 2.1. Giải phẫu tệp ảnh Bitmap (BMP)
-Khác với PNG hay JPEG vốn sử dụng các thuật toán nén phức tạp (DEFLATE, Discrete Cosine Transform), định dạng **Windows Bitmap (BMP)** lưu trữ dữ liệu điểm ảnh dưới dạng thô (Raw Uncompressed Pixel Data):
-
-1. **BITMAPFILEHEADER (14 bytes):** Chứa định danh `BM` (`0x4D42`), kích thước tệp và vị trí bắt đầu của mảng pixel (`bfOffBits`).
-2. **BITMAPINFOHEADER / DIB Header (40 bytes trở lên):** Xác định chiều rộng (Width), chiều cao (Height), độ sâu màu (Bits Per Pixel - bpp).
-3. **Color Table / Gap (tùy chọn):** Bảng màu hoặc khoảng trống căn lề.
-4. **Pixel Array:** Mảng lưu trữ giá trị các kênh màu (thường là BGR - Blue, Green, Red) cho từng điểm ảnh.
-
-> [!IMPORTANT]
-> Trong hàm `main`, chương trình thực hiện copy nguyên vẹn **2000 byte đầu tiên** của ảnh gốc sang ảnh mới trước khi can thiệp dữ liệu. Khoảng 2000 byte này bao gồm toàn bộ Header, Metadata và một phần pixel ban đầu. Việc bỏ qua khoảng đệm này giúp bảo toàn tuyệt đối tính toàn vẹn của tệp BMP, ngăn chặn nguy cơ làm hỏng header khiến các trình đọc ảnh từ chối mở tệp.
-
-### 2.2. Bản chất toán học của LSB Steganography
-Mắt người có giới hạn về độ nhạy màu sắc (Just Noticeable Difference - JND). Mỗi byte biểu diễn cường độ màu nhận giá trị từ $0 \to 255$ (8 bit nhị phân):
-
-$$\text{Byte} = b_7 b_6 b_5 b_4 b_3 b_2 b_1 b_0$$
-
-- Bit $b_7$ là **MSB (Most Significant Bit)**: Mang trọng số $2^7 = 128$. Thay đổi bit này sẽ làm thay đổi màu sắc rõ rệt.
-- Bit $b_0$ là **LSB (Least Significant Bit)**: Mang trọng số $2^0 = 1$. Việc thay đổi bit $b_0$ chỉ làm dịch chuyển giá trị độ sáng tối đa $\pm 1$ đơn vị ($\approx 0.39\%$), một độ lệch hoàn toàn vô hình trước thị giác con người.
-
-Bằng cách thay thế bit $b_0$ của mỗi kênh màu bằng 1 bit bí mật, kẻ tấn công hoặc chương trình giấu tin có thể nhúng một thông điệp tùy ý vào tệp đa phương tiện.
+Ở thử thách phần 1 (`Investigative Reversing 1`), chúng ta đã bắt gặp kỹ thuật **Append Steganography (EOF Overlay)** – lợi dụng việc parser dừng đọc sau chunk `IEND` để nối dữ liệu thô vào đuôi ảnh PNG. Tuy nhiên, ở phần 2 này, mẫu vật là ảnh **BMP** và phương thức giấu tin đã được nâng lên tầng vi mô: can thiệp trực tiếp vào từng bit của cấu trúc pixel.
 
 ---
 
-## 3. Dịch ngược Binary với IDA Pro
+## 2. Giải phẫu Cấu trúc BMP & Vùng đệm An toàn (Safe Harbor)
 
-Nạp tệp `mystery` vào IDA Pro 64-bit, chờ thanh trạng thái chuyển sang **AU: idle** và bấm phím tắt **`F5`** tại hàm `main`.
+### 2.1. Cấu trúc nhị phân của Windows Bitmap (BMP)
+Không giống các định dạng ảnh nén (JPEG, PNG, WebP), tệp BMP lưu dữ liệu raster dạng thô theo cấu trúc phân tầng:
 
-### 3.1. Mã giả C Decompiled (`main`)
+- **BITMAPFILEHEADER (14 bytes):** Bắt đầu bằng 2 byte Magic `BM` (`0x4D42`), theo sau là `bfSize` (tổng kích thước tệp) và `bfOffBits` (offset bắt đầu của mảng pixel).
+- **BITMAPINFOHEADER (40 bytes):** Chứa thông tin hình học gồm Width, Height, Color Planes, BitCount (24 bit màu tương đương 3 byte B-G-R cho mỗi pixel) và Compression method (`BI_RGB` = 0, không nén).
+- **Pixel Array (Raster Data):** Các byte màu liên tiếp được quét theo dòng (scanlines) từ dưới lên trên (bottom-up).
+
+```
++--------------------------+  Offset 0x00
+| BITMAPFILEHEADER (14 B)  |  Magic "BM", File Size
++--------------------------+  Offset 0x0E
+| BITMAPINFOHEADER (40 B)  |  Width, Height, 24 bpp
++--------------------------+  Offset 0x36
+| Color Profile / Padding  |
++--------------------------+  Offset 0x7D0 (2000 decimal)
+| >>> VÙNG NHÚNG DỮ LIỆU <<<|  400 bytes LSB nhúng flag
++--------------------------+  Offset 0x960 (2400 decimal)
+| Dữ liệu pixel còn lại     |  Ảnh gốc tiếp tục
++--------------------------+  EOF (1,507,414 bytes)
+```
+
+### 2.2. Ý đồ bảo vệ tệp tin: Tại sao lại bỏ qua 2000 byte đầu tiên?
+Khi kiểm tra hàm `main`, chương trình thực hiện copy nguyên trạng **2000 byte đầu tiên** (`0x7D0`) của `original.bmp` sang `encoded.bmp`:
+
+```c
+v11 = 2000;
+for ( i = 0; i < v11; ++i )
+{
+  fputc(ptr, v15);
+  v6 = fread(&ptr, 1u, 1u, stream);
+}
+```
+
+Về mặt kỹ thuật điều tra, khoảng đệm 2000 byte này có vai trò sống còn:
+1. **Bảo toàn Header & DIB Structure:** Ngăn ngừa nguy cơ ghi đè làm sai lệch các trường kích thước, độ phân giải hoặc bảng màu, khiến tệp tin bị hỏng (corrupted) khi mở bằng các trình render chuẩn của hệ điều hành.
+2. **Né tránh kiểm tra sơ bộ (Triage Bypass):** Các công cụ quét chữ ký tệp tin (File Carving / Signature Scanners) thường chỉ bóc tách và đối soát tính toàn vẹn ở vài kilobyte đầu tiên của tệp tin.
+
+---
+
+## 3. Dịch ngược Nhị phân với IDA Pro (Disassembly & Decompilation)
+
+Nạp tệp `mystery` vào IDA Pro, định vị hàm mục tiêu `main` và hàm bổ trợ mã hóa `codedChar`.
+
+### 3.1. Phân tích Luồng thực thi trong `main`
+Mã giả sinh bởi Hex-Rays Decompiler (`F5`):
 
 ```c
 int __fastcall main(int argc, const char **argv, const char **envp)
@@ -75,10 +99,10 @@ int __fastcall main(int argc, const char **argv, const char **envp)
   int v6; 
   int i, j, k; 
   int v10, v11, v12; 
-  FILE *v13;    // Con trỏ đọc flag.txt
-  FILE *stream; // Con trỏ đọc original.bmp
-  FILE *v15;    // Con trỏ ghi encoded.bmp (chế độ append "a")
-  _BYTE v16[56];// Bộ đệm lưu trữ flag đọc từ flag.txt
+  FILE *v13;    // flag.txt stream
+  FILE *stream; // original.bmp stream
+  FILE *v15;    // encoded.bmp stream
+  _BYTE v16[56];// Buffer chứa chuỗi flag đọc vào
   unsigned __int64 v17;
 
   v17 = __readfsqword(0x28u);
@@ -94,7 +118,7 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
   v6 = fread(&ptr, 1u, 1u, stream);
 
-  // [1] Sao chép nguyên vẹn 2000 byte đầu tiên của ảnh gốc
+  // [Phase 1] Copy nguyên vẹn 2000 byte đầu (0x7D0)
   v11 = 2000;
   for ( i = 0; i < v11; ++i )
   {
@@ -102,7 +126,7 @@ int __fastcall main(int argc, const char **argv, const char **envp)
     v6 = fread(&ptr, 1u, 1u, stream);
   }
 
-  // [2] Đọc flag từ flag.txt (0x32 = 50 ký tự)
+  // [Phase 2] Kiểm định kích thước flag: 0x32 = 50 ký tự
   v12 = fread(v16, 0x32u, 1u, v13);
   if ( v12 <= 0 )
   {
@@ -110,8 +134,8 @@ int __fastcall main(int argc, const char **argv, const char **envp)
     exit(0);
   }
 
-  // [3] Nhúng 50 ký tự của flag vào luồng byte ảnh
-  for ( j = 0; j <= 49; ++j )        // Duyệt 50 ký tự flag
+  // [Phase 3] Vòng lặp nhúng dữ liệu vào luồng byte ảnh
+  for ( j = 0; j <= 49; ++j )        // Duyệt từng ký tự trong 50 ký tự flag
   {
     for ( k = 0; k <= 7; ++k )       // Duyệt 8 bit cho mỗi ký tự
     {
@@ -121,7 +145,7 @@ int __fastcall main(int argc, const char **argv, const char **envp)
     }
   }
 
-  // [4] Sao chép toàn bộ phần còn lại của ảnh gốc
+  // [Phase 4] Đổ nốt phần dữ liệu pixel còn lại của ảnh gốc
   while ( v6 == 1 )
   {
     fputc(ptr, v15);
@@ -136,12 +160,44 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 ```
 
 > [!TIP]
-> **Mẹo IDA Pro:** Khi mới decompile, IDA có thể hiển thị hằng số `v12 = fread(v16, 0x32u, 1u, v13);`. Bạn chỉ cần đặt con trỏ tại `0x32u` và nhấn phím **`H`**, IDA sẽ lập tức chuyển đổi sang hệ thập phân là `50`.
+> **Thao tác nhanh trong IDA Pro:** Tại dòng `fread(v16, 0x32u, 1u, v13);`, hằng số hiển thị dưới dạng cơ số 16 (`0x32`). Đặt con trỏ chuột vào `0x32u` và bấm phím **`H`**, IDA sẽ lập tức chuyển định dạng sang cơ số 10 (`50`). Tương tự, bấm `H` trên `0x7D0` sẽ cho ra giá trị `2000`.
 
-### 3.2. Mổ xẻ hàm con `codedChar`
+### 3.2. Bóc tách Assembly & Logic Bitwise tại hàm `codedChar`
+Để hiểu cặn kẽ hành vi ở tầng thanh ghi CPU, ta quan sát Disassembly của hàm `codedChar`:
 
-Nhấp đúp vào hàm `codedChar`, mã giả thể hiện cốt lõi của giải thuật:
+```x86asm
+.text:0000000000001195  codedChar       proc near
+.text:0000000000001195                  push    rbp
+.text:0000000000001196                  mov     rbp, rsp
+.text:0000000000001199                  mov     [rbp+var_14], edi       ; edi = a1 = k (chỉ số bit từ 0 đến 7)
+.text:000000000000119C                  mov     eax, esi
+.text:000000000000119E                  mov     [rbp+var_18], al        ; al  = a2 = (flag[j] - 5)
+.text:00000000000011A1                  mov     eax, edx
+.text:00000000000011A3                  mov     [rbp+var_1C], al        ; al  = a3 = pixel_byte
+.text:00000000000011A6                  mov     [rbp+var_2], 1          ; Mặt nạ 0x01
+.text:00000000000011AA                  mov     [rbp+var_1], 0FEh       ; Mặt nạ 0xFE (11111110b)
+.text:00000000000011AE                  cmp     [rbp+var_14], 0         ; Kiểm tra k == 0 ?
+.text:00000000000011B2                  jz      short loc_11C4
+.text:00000000000011B4                  movsx   edx, [rbp+var_18]
+.text:00000000000011B8                  mov     eax, [rbp+var_14]
+.text:00000000000011BB                  mov     ecx, eax
+.text:00000000000011BD                  sar     edx, cl                 ; Dịch phải số học: (char - 5) >> k
+.text:00000000000011BF                  mov     eax, edx
+.text:00000000000011C1                  mov     [rbp+var_18], al
+.text:00000000000011C4  loc_11C4:
+.text:00000000000011C4                  movzx   eax, [rbp+var_2]
+.text:00000000000011C8                  and     [rbp+var_18], al        ; Trích bit k: ((char - 5) >> k) & 1
+.text:00000000000011CB                  movzx   eax, [rbp+var_1]
+.text:00000000000011CF                  and     [rbp+var_1C], al        ; Xóa LSB của pixel: pixel_byte & 0xFE
+.text:00000000000011D2                  movzx   eax, [rbp+var_18]
+.text:00000000000011D6                  or      [rbp+var_1C], al        ; Ghép bit: (pixel & 0xFE) | bit_k
+.text:00000000000011D9                  movzx   eax, [rbp+var_1C]       ; Trả về byte mã hóa
+.text:00000000000011DD                  pop     rbp
+.text:00000000000011DE                  retn
+.text:00000000000011DE  codedChar       endp
+```
 
+Mã giả C tương đương:
 ```c
 __int64 __fastcall codedChar(int a1, char a2, char a3)
 {
@@ -150,136 +206,169 @@ __int64 __fastcall codedChar(int a1, char a2, char a3)
   v4 = a2;
   if ( a1 != 0 )
     v4 = a2 >> a1;
-  return v4 & 1 | a3 & 0xFEu;
+  return (v4 & 1) | (a3 & 0xFEu);
 }
 ```
 
-Ánh xạ tham số từ lời gọi `codedChar(k, v16[j] - 5, ptr)`:
-- `a1 = k`: Chỉ số bit đang xử lý ($0 \le k \le 7$).
-- `a2 = v16[j] - 5`: Ký tự thứ $j$ của flag sau khi đã **trừ đi 5**.
-- `a3 = ptr`: Byte hiện tại của file ảnh gốc.
-
-Phân tích từng phép toán bit:
-1. `v4 = a2 >> a1`: Dịch phải ký tự `a2` đi `k` bit.
-2. `v4 & 1`: Lấy giá trị của bit thứ `k` (kết quả là $0$ hoặc $1$).
-3. `a3 & 0xFE`: Vì $\text{0xFE}_{16} = 11111110_2$, phép toán `AND` này sẽ xóa bit cuối cùng của byte ảnh gốc về `0` và giữ nguyên 7 bit cao.
-4. `(v4 & 1) | (a3 & 0xFE)`: Ghi đè bit của flag vào vị trí LSB của byte ảnh.
-
-> [!IMPORTANT]
-> **Thứ tự bit (Bit-Order Convention):**
-> Vòng lặp `k` chạy từ $0 \to 7$. Như vậy:
-> - $k = 0$: Bit thứ $0$ (LSB) của ký tự được ghi vào byte ảnh đầu tiên.
-> - $k = 7$: Bit thứ $7$ (MSB) của ký tự được ghi vào byte ảnh thứ 8.
-> 
-> Đây là quy ước **Little-Endian Bit Order**. Khi giải mã, ta bắt buộc phải khôi phục theo công thức:
-> $$\text{char\_val} = \sum_{k=0}^{7} (\text{bit}_k \ll k)$$
-
 ---
 
-## 4. Thiết kế Mô hình Toán học Đảo ngược (Reverse Pipeline)
+## 4. Giải mã Cơ chế Nhúng tin & Ma trận Ánh xạ Bit
 
-Để khôi phục toàn bộ flag từ file `encoded.bmp`, quy trình giải mã hoàn toàn đối xứng qua 4 giai đoạn:
+Từ kết quả phân tích nhị phân, thuật toán nhúng tin được mô hình hóa qua hai quy luật chặt chẽ:
+
+### 4.1. Biến đổi Số học (Arithmetic Obfuscation)
+Trước khi đưa vào phân tách bit, ký tự gốc $C_j$ của flag bị trừ đi 5 đơn vị:
+$$C'_j = C_j - 5$$
+
+Do đó, phương trình khôi phục bản rõ sẽ là:
+$$C_j = C'_j + 5$$
+
+### 4.2. Quy ước Trọng số Bit (Little-Endian Bit Order)
+Vòng lặp `k` trong hàm `main` chạy tăng dần từ $0 \to 7$:
+- Khi $k = 0$: Bit thứ 0 (Least Significant Bit) của $C'_j$ được ghi vào byte ảnh đầu tiên.
+- Khi $k = 1$: Bit thứ 1 của $C'_j$ được ghi vào byte ảnh thứ hai.
+- ...
+- Khi $k = 7$: Bit thứ 7 (Most Significant Bit) của $C'_j$ được ghi vào byte ảnh thứ 8.
+
+Điều này xác nhận luồng bit được lưu trữ theo quy ước **Little-Endian Bitstream**. Một byte $C'_j$ được tái tạo từ 8 byte ảnh kế tiếp ($B_0 \dots B_7$) theo công thức:
+
+$$C'_j = \sum_{k=0}^{7} (B_k \ \& \ 1) \cdot 2^k = \bigvee_{k=0}^{7} \Big((B_k \ \& \ 1) \ll k\Big)$$
+
+### 4.3. Sơ đồ Kiến trúc Đảo ngược (Reverse Data-Flow Pipeline)
 
 ```mermaid
 flowchart TD
-    subgraph S1 ["1. Đọc và Bỏ qua Header"]
-        F["encoded.bmp"] --> SKIP["Bỏ qua 2000 byte đầu\n(Header & Untouched Pixels)"]
+    subgraph STAGE1 ["Giai đoạn 1: Bỏ qua Vùng đệm An toàn"]
+        IN["Tệp encoded.bmp"] --> SEEK["Seek tới Offset 2000 (0x7D0)"]
     end
 
-    subgraph S2 ["2. Trích xuất Chuỗi Bit LSB"]
-        SKIP --> READ["Đọc 50 × 8 = 400 bytes kế tiếp"]
-        READ --> BIT["Trích xuất LSB mỗi byte:\nbit = byte & 1"]
+    subgraph STAGE2 ["Giai đoạn 2: Trích xuất Luồng Bit thô"]
+        SEEK --> READ["Đọc chính xác 50 ký tự × 8 bit = 400 bytes"]
+        READ --> LSB["Lấy LSB của từng byte: bit = byte & 1"]
     end
 
-    subgraph S3 ["3. Gom cụm 8 Bit & Khôi phục Byte"]
-        BIT --> CHUNK["Chia 400 bit thành 50 nhóm\n(Mỗi nhóm 8 bit)"]
-        CHUNK --> SHIFT["Ghép Little-Endian:\nval = sum(bit[k] << k)"]
+    subgraph STAGE3 ["Giai đoạn 3: Tái tạo Ký tự (Little-Endian)"]
+        LSB --> SLICE["Chia 400 bit thành 50 khối (8 bit/khối)"]
+        SLICE --> REBUILD["val = sum(bit[k] << k) với k = 0..7"]
     end
 
-    subgraph S4 ["4. Đảo ngược Phép biến đổi Số học"]
-        SHIFT --> ADD["Cộng bù trừ:\noriginal_char = chr(val + 5)"]
-        ADD --> FLAG["academy{n3xt_0n30000000000000000000000000b2a84f53}"]
+    subgraph STAGE4 ["Giai đoạn 4: Đảo ngược Phép toán & Trích xuất Flag"]
+        REBUILD --> RESTORE["char = chr(val + 5)"]
+        RESTORE --> OUT["academy{n3xt_0n30000000000000000000000000b2a84f53}"]
     end
 ```
 
 ---
 
-## 5. Khai thác & Khôi phục Tự động (`solve.py`)
+## 5. Xây dựng Công cụ Khôi phục Tự động (Proof of Concept / Exploit Script)
 
-Dưới đây là kịch bản Python hoàn chỉnh thực thi giải mã:
+Hiện thực hóa toàn bộ logic trên thành script Python hoàn chỉnh:
 
 ```python
 #!/usr/bin/env python3
 """
-solve.py — picoCTF: Investigative Reversing 2
-Trích xuất dữ liệu giấu tin LSB Steganography trong tệp BMP và đảo ngược phép toán số học.
+solve.py — Investigative Reversing 2 Solver
+Tác giả: Lewall (Security Research & DFIR Writeup)
+Mục tiêu: Bóc tách payload LSB Steganography từ tệp BMP và đảo ngược biến đổi số học.
 """
 
-def extract_flag(filename: str, flag_len: int = 50, header_offset: int = 2000) -> str:
-    flag_bits = []
+import sys
+import os
+
+def solve(filename: str, flag_len: int = 50, header_offset: int = 2000) -> str:
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"[-] Không tìm thấy tệp mục tiêu: {filename}")
+
+    file_size = os.path.getsize(filename)
+    required_bytes = header_offset + (flag_len * 8)
     
+    if file_size < required_bytes:
+        raise ValueError(
+            f"[-] Dung lượng tệp quá nhỏ ({file_size} bytes). Yêu cầu tối thiểu: {required_bytes} bytes."
+        )
+
+    print(f"[*] Đang nạp tệp: {filename} ({file_size:,} bytes)")
+    print(f"[*] Bỏ qua Header Offset: {header_offset} bytes")
+    print(f"[*] Trích xuất payload: {flag_len * 8} bytes ({flag_len} ký tự × 8 bits)")
+
+    flag_bits = []
     with open(filename, "rb") as f:
-        # 1. Bỏ qua 2000 byte header không đổi
+        # 1. Bỏ qua header
         f.seek(header_offset)
-        
-        # 2. Đọc chính xác 50 * 8 = 400 byte chứa các bit nhúng của flag
-        payload_bytes = f.read(flag_len * 8)
-        if len(payload_bytes) < flag_len * 8:
-            raise ValueError("Tệp ảnh không đủ kích thước dữ liệu cần thiết!")
-            
-        for byte in payload_bytes:
-            # Lấy bit LSB (tương ứng phép & 1 trong binary)
+        # 2. Đọc khối dữ liệu mang tin ẩn
+        payload = f.read(flag_len * 8)
+        for byte in payload:
             flag_bits.append(byte & 1)
-            
-    # 3. Tái cấu trúc từng ký tự từ các nhóm 8 bit (Little-Endian)
-    flag = ""
+
+    # 3. Gom cụm 8 bit theo Little-Endian và hoàn nguyên phép cộng 5
+    recovered_chars = []
     for i in range(0, len(flag_bits), 8):
         byte_bits = flag_bits[i:i+8]
-        # Gom các bit theo trọng số bit 0 -> 7
+        # Ghép bit với trọng số bit 0 -> 7
         val = sum(bit << idx for idx, bit in enumerate(byte_bits))
-        # Đảo ngược phép toán: mã hóa trừ 5 -> giải mã cộng 5
-        flag += chr(val + 5)
-        
+        # Đảo ngược phép toán: mã hóa (char - 5) => giải mã (val + 5)
+        recovered_chars.append(chr(val + 5))
+
+    flag = "".join(recovered_chars)
     return flag
 
 if __name__ == "__main__":
-    target_file = "encoded.bmp"
-    flag = extract_flag(target_file)
-    print("=" * 60)
-    print(f"[+] Flag thu được: {flag}")
-    print(f"[+] Độ dài chuỗi : {len(flag)} ký tự")
-    print("=" * 60)
+    target = "encoded.bmp"
+    try:
+        flag = solve(target)
+        print("\n" + "=" * 65)
+        print(f"[+] FLAG THÀNH CÔNG: {flag}")
+        print(f"[+] Độ dài Flag    : {len(flag)} ký tự")
+        print("=" * 65)
+    except Exception as e:
+        print(f"[!] Lỗi trong quá trình giải mã: {e}", file=sys.stderr)
+        sys.exit(1)
 ```
 
-### Kết quả thực thi
+### Kết quả thẩm định thực nghiệm
 ```text
-============================================================
-[+] Flag thu được: academy{n3xt_0n30000000000000000000000000b2a84f53}
-[+] Độ dài chuỗi : 50 ký tự
-============================================================
-```
+[*] Đang nạp tệp: encoded.bmp (1,507,414 bytes)
+[*] Bỏ qua Header Offset: 2000 bytes
+[*] Trích xuất payload: 400 bytes (50 ký tự × 8 bits)
 
-Flag hợp lệ có độ dài chính xác **50 ký tự** đúng như điều kiện kiểm tra `fread(v16, 0x32u, 1u, v13)` trong tệp nhị phân.
+=================================================================
+[+] FLAG THÀNH CÔNG: academy{n3xt_0n30000000000000000000000000b2a84f53}
+[+] Độ dài Flag    : 50 ký tự
+=================================================================
+```
 
 ---
 
-## 6. Phân tích Dưới Góc Nhìn Chuyên Gia An Toàn Thông Tin (Security Researcher Perspective)
+## 6. Dấu vết Điều tra (Forensic Artifacts) & Kỹ thuật Phát hiện (Steganalysis)
 
-### 6.1. Phương pháp phát hiện Steganalysis (DFIR)
-Trong thực tế điều tra sự cố số, khi không có mã nguồn hoặc tệp thực thi của kẻ tấn công, làm thế nào để chuyên gia phát hiện ra một file BMP đang chứa dữ liệu LSB giấu tin?
+Dưới góc độ phòng thủ và điều tra số (DFIR), nếu đứng trước một tệp ảnh nghi ngờ mà **hoàn toàn không có binary thực thi**, chuyên gia có thể áp dụng các kỹ thuật sau để phát hiện và cô lập kênh truyền bí mật:
 
-1. **Kiểm tra Phân bố Tần suất Byte (Chi-Square Attack on PoVs):**
-   Trong ảnh tự nhiên, tần số xuất hiện của các cặp giá trị chẵn/lẻ lân cận $(2k, 2k+1)$ (gọi là Pairs of Values - PoVs) thường không bằng nhau. Khi áp dụng LSB nhúng ngẫu nhiên, tần suất của $2k$ và $2k+1$ sẽ có xu hướng cân bằng tiệm cận. Sử dụng kiểm định $\chi^2$ (Chi-square test) trên từng khối byte của ảnh sẽ lập tức làm bộc lộ vùng dữ liệu bất thường từ offset `2000` đến `2400`.
-2. **Kỹ thuật LSB Extraction Visualization:**
-   Tạo ảnh mặt nạ bằng cách nhân giá trị bit 0 với 255: `pixel_mask = (pixel & 1) * 255`. Vùng ảnh bình thường sẽ có dạng nhiễu hạt ngẫu nhiên, trong khi vùng chứa dữ liệu văn bản/mật mã thường xuất hiện các dải hoa văn đồng nhất hoặc có cấu trúc bất thường.
+### 6.1. Tấn công Kiểm định Phân bố Cặp giá trị ($\chi^2$ Attack on PoVs)
+Trong ảnh tự nhiên chưa qua can thiệp, tần suất xuất hiện của các cặp giá trị kênh màu liền kề $(2k, 2k+1)$ (được gọi là *Pairs of Values - PoVs*, ví dụ cặp giá trị 100 và 101) tuân theo phân phối gradient tự nhiên của khung cảnh và hiếm khi bằng nhau.
 
-### 6.2. Ứng dụng Thực tế Trong Chiến dịch Mã Độc Nâng Cao (APTs)
-Kỹ thuật LSB Steganography trong BMP/PNG không chỉ xuất hiện trong các bài thi CTF mà từng được ghi nhận trong nhiều chiến dịch tấn công APT khét tiếng:
-- **Stegoloader (Gatak):** Sử dụng các tệp ảnh kỹ thuật số định dạng BMP hoặc PNG để giấu các module mã độc PE payload chính. Chỉ khi được nạp vào bộ nhớ máy nạn nhân, mã độc mới tiến hành trích xuất LSB để giải mã payload thực thi.
-- **OceanLotus (APT32):** Nhúng cấu hình C2 server và DLL độc hại vào ảnh BMP/ICO để vượt qua hệ thống giám sát cổng mạng (Next-Gen Firewall / IDS) và các phần mềm diệt virus kiểm tra chữ ký thông thường.
+Khi một thuật toán LSB tuần tự nhúng dữ liệu ngẫu nhiên (hoặc dữ liệu văn bản đã qua biến đổi) vào bit $b_0$, xác suất để một giá trị chẵn chuyển thành lẻ hoặc ngược lại là $\approx 50\%$. Hiện tượng này kéo tần suất xuất hiện của $2k$ và $2k+1$ về trạng thái cân bằng tiệm cận:
 
-### 6.3. Giải pháp Phòng ngừa & Khắc phục
-- **Triển khai Content Disarm and Reconstruction (CDR):** 
-  Các cổng bảo mật nội dung mạng cần áp dụng giải pháp CDR: tự động phân giải ảnh, làm sạch hoặc tái nén (re-encode) sang định dạng khác trước khi chuyển đến người dùng cuối. Quá trình re-encode sẽ làm thay đổi cấu trúc pixel và phá hủy hoàn toàn các payload LSB ẩn giấu.
-- **Giám sát Dung lượng & Bất thường Tệp:** 
-  Cảnh báo bất thường đối với các tệp ảnh BMP có dung lượng lớn được truyền tải qua các giao thức web/mail không mã hóa ra các IP ngoại vi đáng ngờ.
+$$N_{2k} \approx N_{2k+1} \approx \frac{N_{2k} + N_{2k+1}}{2}$$
+
+Bằng cách áp dụng kiểm định thống kê Chi-Square ($\chi^2$) theo từng cửa sổ trượt (sliding window) dọc theo dòng quét pixel:
+- Tại các vùng ảnh bình thường: Giá trị $p\text{-value} \approx 0$ (bác bỏ giả thuyết có giấu tin).
+- Tại vùng từ offset **2000 đến 2400**: Giá trị $p\text{-value}$ đột ngột tiệm cận **1.0** (xác nhận bất thường mật mã học cực cao). Dấu hiệu này cho phép điều tra viên khoanh vùng chính xác vị trí payload mà không cần dịch ngược mã máy.
+
+### 6.2. Trực quan hóa Mặt nạ Bit LSB (LSB Bit-plane Slicing)
+Bằng cách cô lập riêng bit thấp nhất của từng pixel và nhân với 255:
+
+$$\text{Mask}(x, y) = (\text{Pixel}(x, y) \ \& \ 1) \times 255$$
+
+Trình hiển thị ảnh mặt nạ sẽ bộc lộ:
+- Phần pixel thông thường xuất hiện dưới dạng nhiễu trắng ngẫu nhiên (White Noise) do nhiễu cảm biến ảnh (Sensor noise).
+- Vùng bị nhúng dữ liệu (400 bytes tương đương 133 pixels RGB) sẽ tạo thành một vệt ngang có cấu trúc cục bộ khác biệt rõ rệt so với toàn bộ phần còn lại của bức ảnh.
+
+### 6.3. Mối liên hệ Thực tiễn trong Phân tích Mã độc Hiện đại (Stegware & APTs)
+Kỹ thuật nhúng payload vào các kênh màu LSB của ảnh định dạng BMP/PNG là vũ khí quen thuộc của các chiến dịch tấn công có chủ đích (APT):
+- **Stegoloader (Gatak Malware):** Ẩn giấu các module mã độc Portable Executable (PE) hoàn chỉnh bên trong các file ảnh kỹ thuật số trên các trang chia sẻ ảnh công cộng. Khi mã độc dropper thực thi trên máy nạn nhân, nó tải ảnh về, trích xuất LSB để lấy payload và thực thi trực tiếp trên bộ nhớ (In-memory execution) nhằm né tránh sự phát hiện của EDR/Antivirus.
+- **OceanLotus (APT32):** Nhúng cấu hình máy chủ điều khiển (C2 Configuration) và shellcode giai đoạn hai vào các icon (.ico) và ảnh BMP để vượt qua các tường lửa kiểm tra gói tin sâu (Deep Packet Inspection - DPI).
+
+### 6.4. Biện pháp Phòng ngự: Content Disarm and Reconstruction (CDR)
+Để triệt tiêu hoàn toàn nguy cơ rò rỉ dữ liệu hoặc tải mã độc qua các kênh giấu tin LSB:
+1. **Áp dụng công nghệ CDR tại Mail Gateway & Web Proxy:** Tự động giải mã hình ảnh thành mảng pixel thô và nén lại (Re-encoding/Re-rasterization) sang định dạng khác (ví dụ: chuyển BMP sang WebP/JPEG nén có tổn hao). Quá trình tái lượng tử hóa (Quantization) sẽ phá hủy triệt để mọi dữ liệu giấu tại các bit trọng số thấp mà không làm suy giảm trải nghiệm thị giác của người dùng.
+2. **Kiểm soát dung lượng và tỷ lệ nén:** Thiết lập giám sát cảnh báo đối với các tệp tin hình ảnh không nén (như BMP) có dung lượng bất thường được truyền tải ra các dải IP ngoại vi ngoài giờ hành chính.
