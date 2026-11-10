@@ -34,7 +34,10 @@ Bảng định danh mẫu vật nhị phân thu thập tại hiện trường:
 | **Định dạng file** | ELF 64-bit LSB pie executable, x86-64 | PC bitmap, Windows 3.x format |
 | **Kích thước** | 16,784 bytes | 1,507,414 bytes (1.43 MB) |
 | **Độ phân giải** | N/A | 1765 × 852 pixels, 24 bpp (RGB) |
-| **SHA-256 Hash** | `ecf5a037189e0f750d85248738d07060093f9176b905564d336b8508fa69a0f1` | `457861d20cf903b7941bba7fe932462242d94ba956776e70c4778dfcfc63b27a` |
+
+**Mã băm toàn vẹn (SHA-256):**
+- `mystery`: `ecf5a037189e0f750d85248738d07060093f9176b905564d336b8508fa69a0f1`
+- `encoded.bmp`: `457861d20cf903b7941bba7fe932462242d94ba956776e70c4778dfcfc63b27a`
 
 ![Ảnh chứa dữ liệu ẩn](/img/writeups/investigative-reversing-3/encoded.png)
 *Hình ảnh hiển thị của encoded.bmp: Dữ liệu raster vẫn bảo toàn độ nguyên vẹn thị giác, không có sai lệch màu có thể phân biệt.*

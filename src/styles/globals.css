@@ -434,6 +434,25 @@ body {
   border-color: var(--inline-code-border);
 }
 
+/* Responsive Markdown Tables */
+.prose table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+.prose th {
+  white-space: nowrap;
+}
+
+.prose td code {
+  word-break: break-all;
+}
+
 
 .copy-button {
   position: absolute;
