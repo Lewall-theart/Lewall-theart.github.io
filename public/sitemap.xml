@@ -16,6 +16,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://lewall-theart.github.io/posts/heapedit</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://lewall-theart.github.io/posts/investigative-reversing-2</loc>
     <lastmod>2026-11-10</lastmod>
     <changefreq>monthly</changefreq>
@@ -88,6 +94,41 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://lewall-theart.github.io/tags/Heap%20Exploitation</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Pwn</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Glibc%202.27</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Tcache</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Chunk%20Layout</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/Python%20Pwntools</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://lewall-theart.github.io/tags/CTF</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://lewall-theart.github.io/tags/Reverse%20Engineering</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -119,11 +160,6 @@
   </url>
   <url>
     <loc>https://lewall-theart.github.io/tags/Python</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://lewall-theart.github.io/tags/CTF</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
