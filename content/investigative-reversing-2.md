@@ -3,7 +3,7 @@ title: Investigative Reversing 2 – Khôi phục LSB Steganography và Biến �
 date: '2026-11-10'
 excerpt: >-
   Phân tích chuyên sâu kỹ thuật giấu tin LSB Steganography trong tệp ảnh BMP kết hợp biến đổi số học và thứ tự bit Little-Endian bằng IDA Pro, từ đó xây dựng công cụ trích xuất flag tự động bằng Python.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/investigative-reversing-2.jpg
 flag: 'academy{n3xt_0n30000000000000000000000000b2a84f53}'
 tags:
   - Reverse Engineering

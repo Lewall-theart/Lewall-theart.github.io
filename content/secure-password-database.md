@@ -3,7 +3,7 @@ title: Secure Password Database – Phân tích Lỗ hổng Heartbleed trên Hea
 date: '2026-11-10'
 excerpt: >-
   Hướng dẫn từng bước dịch ngược tệp nhị phân ELF 64-bit system.out trong IDA Pro: nhận diện phép giải mã XOR 0xAA, bóc tách thuật toán băm djb2, và khai thác lỗ hổng rò rỉ bộ nhớ Heap kiểu Heartbleed để giải mã flag.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/secure-password-database.jpg
 flag: 'picoCTF{...}'
 tags:
   - Reverse Engineering

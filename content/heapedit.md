@@ -3,7 +3,7 @@ title: Tea-Cash / HeapEdit – Giải mã Cấu trúc Chunk Glibc 2.27 và Duy�
 date: '2026-11-12'
 excerpt: >-
   Phân tích chi tiết cơ chế quản lý tcache trong Glibc 2.27 qua thử thách tea-cash (HeapEdit), giải mã lý do khoảng cách giữa các chunk malloc(0x80) liên tiếp là 0x90 (0x80 + 0x10), cơ chế LIFO của free list và khôi phục flag thành công.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/heapedit.jpg
 flag: 'academy{ef29b8f2d75bd216bf505de0d02fddef}'
 tags:
   - Heap Exploitation

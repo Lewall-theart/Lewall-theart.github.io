@@ -4,7 +4,7 @@ date: '2026-11-10'
 excerpt: >-
   In-depth analysis of LSB Steganography within raw BMP image structures, combined with
   arithmetic transforms and Little-Endian bit ordering using IDA Pro to author an automated extraction solver in Python.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/investigative-reversing-2.jpg
 flag: 'academy{n3xt_0n30000000000000000000000000b2a84f53}'
 tags:
   - Reverse Engineering

@@ -4,7 +4,7 @@ date: '2026-11-10'
 excerpt: >-
   IDA Pro を駆使して BMP 画像に埋め込まれた LSB ステガノグラフィ、算術変調、
   およびリトルエンディアンのビット順序を徹底解明し、Python による自動フラグ復元ツールを構築する。
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/investigative-reversing-2.jpg
 flag: 'academy{n3xt_0n30000000000000000000000000b2a84f53}'
 tags:
   - Reverse Engineering

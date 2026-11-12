@@ -3,7 +3,7 @@ title: Investigative Reversing 4 – Bóc tách Interleaved LSB Đa tệp và B�
 date: '2026-11-10'
 excerpt: >-
   Phân tích chuyên sâu chiến thuật giấu tin phân mảnh đa tệp (Multi-file Sharding) kết hợp điều chế nhịp chu kỳ 12-byte (12-byte Cadence Modulation) và bẫy đảo ngược thứ tự thực thi trong chuỗi thử thách Investigative Reversing 4, dịch ngược mã máy x86-64 với IDA Pro và xây dựng công cụ khôi phục toàn vẹn 50 ký tự flag.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/investigative-reversing-4.jpg
 flag: 'academy{N1c3_R3ver51ng_5k1115_0000000000032104f2f}'
 tags:
   - Reverse Engineering

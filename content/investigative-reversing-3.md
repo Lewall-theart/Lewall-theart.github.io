@@ -3,7 +3,7 @@ title: Investigative Reversing 3 – Vượt bẫy Mất đồng bộ Khung bit 
 date: '2026-11-10'
 excerpt: >-
   Khám phá kỹ thuật giấu tin LSB Steganography xen kẽ (Interleaved LSB) kết hợp cơ chế gây mất đồng bộ khung bit (Framing Error) trong tệp ảnh BMP, dịch ngược mã máy ELF64 với IDA Pro và xây dựng công cụ trích xuất flag tự động bằng Python.
-featured: /thumbnails/investigative-reversing.jpg
+featured: /thumbnails/investigative-reversing-3.jpg
 flag: 'academy{4n0th3r_L5b_pr0bl3m_0000000000000e77bbbaa}'
 tags:
   - Reverse Engineering
